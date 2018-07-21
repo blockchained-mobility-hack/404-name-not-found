@@ -19,8 +19,8 @@ getAccessTokenAmadeus() async {
     'https://test.api.amadeus.com/v1/security/oauth2/token',
     body: {
         "grant_type": "client_credentials",
-        "client_id": "xx",
-        "client_secret": "xx",
+        "client_id": secrets.amadeusClientId,
+        "client_secret": secrets.amadeusSecret,
       }
   );
   accessToken = json.decode(response.body)['access_token'];
