@@ -75,14 +75,21 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
 app.post('/api/mobile-app/mobility-platform/mobile/accept-service', jsonParser, (req, res) => {
     const offerId = req.body.offerId
 
-    const userBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+    await blockchain.unlockBlockchainAccount(blockchain.userBlockchainAddress, blockchain.userBlockchainPassword)
+    const transactionToBeSend = blockchain.deployedContract.methods.acceptService()
+    const gasEstimation = transactionToBeSend.estimateGas()
+    const commitedTransaction = await transactionToBeSend.send()
+    const commitedTransactionEvent = commitedTransaction.event
 
-    console.log(offerId, userBlockchainAddress) // TODO EXECUTE TRANSACTION acceptService AND RETURN EVENT TO APP
-    const event = "ServiceAccepted"
+    const response = JSON.stringify(
+        {
+            offerId: commitedTransactionEvent
+        })
+    websocket.send(response)
     res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify({event}))
+    res.send(response)
     if (!req.body) return res.sendStatus(400)
-    // create user in req.body
+})
 })
 
 app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParser, (req, res) => {
