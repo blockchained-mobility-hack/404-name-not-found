@@ -24,6 +24,25 @@ class _MyHomePageState extends State<MyHomePage> {
       child: new Text(text));
   }
 
+  Column listRoutes() {
+    return Column(
+      children: <Widget>[
+        ListTile(
+          leading: Icon(Icons.map),
+          title: Text('Map'),
+        ),
+        ListTile(
+          leading: Icon(Icons.photo_album),
+          title: Text('Album'),
+        ),
+        ListTile(
+          leading: Icon(Icons.phone),
+          title: Text('Phone'),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Step> my_steps = [
@@ -31,12 +50,12 @@ class _MyHomePageState extends State<MyHomePage> {
           title: new Text("Step 1"),
           content: Column(children: [
             buildSearchButton("What is your start location?"),
-            buildSearchButton("What is your target location?")]
-          ),
+            buildSearchButton("What is your target location?"),
+          ]),
           isActive: true),
       new Step(
           title: new Text("Step 2"),
-          content: new Text("World!"),
+          content: listRoutes(),
           state: StepState.editing,
           isActive: true),
       new Step(
