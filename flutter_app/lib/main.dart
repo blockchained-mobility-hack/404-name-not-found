@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_google_places_autocomplete/flutter_google_places_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong/latlong.dart';
 
 part 'home.dart';
 
@@ -25,32 +26,56 @@ class AirportResult {
   String code;
   String name;
   int distance;
+  double latitude;
+  double longitude;
 
-  AirportResult({this.code, this.name, this.distance});
+  AirportResult(
+      {this.code, this.name, this.distance, this.latitude, this.longitude});
+}
+
+Future<double> getFlightPrice(String origin, String destination) async {
+  final response = await callAmadeus('v1/reference-data/locations/airports', {
+    "origin": origin,
+    "destination": destination,
+    "departureDate": "2018-08-15",
+  });
+
+  var decoded = json.decode(response.body);
+
+  var offer = decoded['data']['offerItems'][0];
+  var price = offer['price']['total'];
+
+  return price;
 }
 
 Future<AirportResult> fetchAirport(double latitude, double longitude) async {
   final response = await callAmadeus('v1/reference-data/locations/airports', {
-        "latitude": latitude.toString(),
-        "longitude": longitude.toString(),
-        "sort": "relevance",
+    "latitude": latitude.toString(),
+    "longitude": longitude.toString(),
+    "sort": "relevance",
   });
 
   if (response.statusCode == 200) {
     var decoded = json.decode(response.body);
     var result = decoded['data'][0];
     return new AirportResult(
-        code: result['iataCode'],
-        name: result['name'],
-        distance: result['distance']['value']);
+      code: result['iataCode'],
+      name: result['name'],
+      distance: result['distance']['value'],
+      latitude: result['geoCode']['latitude'],
+      longitude: result['geoCode']['longitude'],
+    );
   } else {
     throw Exception('Failed to load airport');
   }
 }
 
-Future<List<Result>> getResults(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd) async {
+Future<List<Result>> getResults(
+    latitudeStart, longitudeStart, latitudeEnd, longitudeEnd) async {
   final airport1 = await fetchAirport(latitudeStart, longitudeStart);
   final airport2 = await fetchAirport(latitudeEnd, longitudeEnd);
+  
+  var flightPrice = await getFlightPrice(airport1.code, airport2.code);
 
   List<Result> res = [];
 
@@ -61,12 +86,18 @@ Future<List<Result>> getResults(latitudeStart, longitudeStart, latitudeEnd, long
     price: 0.36 * airport1.distance,
     type: TravelType.carsharing,
   );
-  
+
+  final Distance distance = new Distance();
+  var distanceFlight = (distance(
+    new LatLng(airport1.latitude, airport1.longitude),
+    new LatLng(airport2.latitude, airport2.longitude),
+  ) ~/ 1000).toInt();
+
   Result flight = new Result(
     distanceSoFar: airport1.distance,
-    distance: 567,
+    distance: distanceFlight,
     title: 'Flug',
-    price: 1337.0,
+    price: flightPrice,
     type: TravelType.plane,
   );
 
@@ -81,7 +112,7 @@ Future<List<Result>> getResults(latitudeStart, longitudeStart, latitudeEnd, long
   res.add(start);
   res.add(flight);
   res.add(end);
-  
+
   return res;
 }
 
@@ -94,7 +125,8 @@ class Result {
   String title;
   double price;
 
-  Result({this.type, this.distanceSoFar, this.distance, this.title, this.price});
+  Result(
+      {this.type, this.distanceSoFar, this.distance, this.title, this.price});
 }
 
 const kGoogleApiKey = "AIzaSyA0TtT66-MIIYTqFBadycf-DfNd-J9lXe0";
@@ -126,8 +158,6 @@ class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => new _MyHomePageState();
 }
-
-
 
 Future<Null> displayPrediction(Prediction p, ScaffoldState scaffold) async {
   if (p != null) {
