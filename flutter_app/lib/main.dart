@@ -146,13 +146,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MobiPay',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: new SplashScreen(),
       routes: <String, WidgetBuilder>{
-       '/home': (BuildContext context) => new MyHomePage(title: 'Flutter Demo hHome Page')
+       '/home': (BuildContext context) => new MyHomePage(title: 'MobiPay')
       },
     );
   }
