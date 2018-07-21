@@ -1,57 +1,60 @@
-Express & ES6 REST API Boilerplate
-==================================
 
-This is a straightforward boilerplate for building REST APIs with ES6 and Express.
+# Express-Boilerplate
 
-- ES6 support via [babel](https://babeljs.io)
-- REST resources as middleware via [resource-router-middleware](https://github.com/developit/resource-router-middleware)
-- CORS support via [cors](https://github.com/troygoode/node-cors)
-- Body Parsing via [body-parser](https://github.com/expressjs/body-parser)
+A fast :fast_forward:, simple **Node.js/Express** + **MongoDB** + **Vue.js** web app boilerplate project. This template provides a set of best-practice setups and avoids common mistakes. Hopefully useful for hackathons... :pray: :zap: 
 
-> Tip: If you are using [Mongoose](https://github.com/Automattic/mongoose), you can automatically expose your Models as REST resources using [restful-mongoose](https://git.io/restful-mongoose).
-
-
-
-Getting Started
----------------
-
-```sh
-# clone it
-git clone git@github.com:developit/express-es6-rest-api.git
-cd express-es6-rest-api
-
-# Make it your own
-rm -rf .git && git init && npm init
-
-# Install dependencies
-npm install
-
-# Start development live-reload server
-PORT=8080 npm run dev
-
-# Start production server:
-PORT=8080 npm start
-```
-Docker Support
-------
-```sh
-cd express-es6-rest-api
-
-# Build your docker
-docker build -t es6/api-service .
-#            ^      ^           ^
-#          tag  tag name      Dockerfile location
-
-# run your docker
-docker run -p 8080:8080 es6/api-service
-#                 ^            ^
-#          bind the port    container tag
-#          to your host
-#          machine port   
+## Quickstart
 
 ```
+$ git clone https://github.com/cktang88/express-boilerplate
+$ cd express-boilerplate
+$ npm i --dev
+$ npm start
+```
+Then go visit http://localhost:8000
 
-License
--------
+## Batteries included.
 
-MIT
+### Back-end
+* [x] **[Express](https://github.com/expressjs/express)** - Web framework for Node.js
+* [x] **[MongoDB](https://github.com/mongodb/node-mongodb-native)** - Database for fast prototyping
+* [x] [Bunyan](https://github.com/trentm/node-bunyan) - Easy JSON logging.
+
+### Front-end
+* [x] **[Vue.js](https://vuejs.org/)**
+* [x] [Spectre.css](https://picturepan2.github.io/spectre/index.html) - lightweight CSS-only framework that uses native HTML tags. A third the size of Bulma.css, a quarter the size of Bootstrap css.
+### Extra
+* [x] [Eslint](http://eslint.org/) - Javascript linting
+* [x] [node-fetch](https://github.com/bitinn/node-fetch) - server-side HTTP requests using browser `window.fetch()` api
+* [x] Security via [CORS](https://github.com/expressjs/cors) and [Helmet.js](https://helmetjs.github.io/)
+* [x] [node-dev](https://github.com/fgnass/node-dev) - Automatic server reload
+
+## Philosophy
+1. **Fast** - get up and running immediately.
+2. **Simple, zero-config** - no need to manually set up config files.
+3. **Lightweight, no module bloat** - total node_modules size is just 20MB.
+
+## Project structure
+```
+.
+├── logs // where logs get stored
+├── public
+│   ├── domhelpers.js // for DOM manipulation, mimics jQuery
+│   ├── index.html
+│   └── index.js
+├── server
+│   ├── dbManager.js // interacting with MongoDB
+│   ├── logger.js // simple logging functionality
+│   └── server.js // main Express server
+└── tests // put tests in here
+```
+
+## Dev
+Code linting with [AirBnB's style guide](https://github.com/airbnb/javascript):
+```
+$ npm run lint
+```
+
+## License
+
+This work is licensed under the [The MIT License](http://opensource.org/licenses/MIT)

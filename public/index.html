@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="description">
+  <meta name="author" content="author">
+  <title>Title</title>
+  <link rel="icon" href="favicon.ico">
+  <!-- fonts -->
+  <link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto:300">
+  <!-- spectre.css -->
+  <!-- also suggests consistent color theme -->
+  <link rel='stylesheet' href="https://cdnjs.cloudflare.com/ajax/libs/spectre.css/0.5.1/spectre.min.css">
+  <style>
+    body {
+      /*
+      font-family: 'Open Sans', sans-serif;
+      */
+      background: #e7e9ed;
+      font-size: 16pt;
+      color: #454d5d;
+      padding-left: 1em;
+    }
+  </style>
+
+  <!-- preloading late-discovered js -->
+  <link rel='preload' href='domhelpers.js' as='script'>
+  <link rel='preload' href='index.js' as='script'>
+</head>
+
+<body>
+
+  <!-- navbar header -->
+  <header class="navbar">
+    <section class="navbar-section">
+      <a href="#" class="navbar-brand mr-10">Spectre.css</a>
+      <a href="#" class="btn btn-link">Docs</a>
+      <a href="https://github.com/picturepan2/spectre" class="btn btn-link">GitHub</a>
+    </section>
+    <section class="navbar-section">
+      <div class="input-group input-inline">
+        <input class="form-input" type="text" placeholder="search" />
+        <button class="btn btn-primary input-group-btn">Search</button>
+      </div>
+    </section>
+  </header>
+
+  <div id='app'>
+    <h2>PageTitle</h2>
+
+    <!-- card example -->
+    <!-- using flexbox layout system -->
+    <div class="card column col-4">
+      <div class="card-image">
+        <img src="placeholder-skull.svg" class="img-responsive" />
+      </div>
+      <div class="card-header">
+        <h4 class="card-title">Microsoft</h4>
+        <h6 class="card-subtitle">Software and hardware</h6>
+      </div>
+      <div class="card-body">
+        Empower every person and every organization on the planet to achieve more.
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-primary">Do</button>
+      </div>
+    </div>
+
+    <!-- modal example (set class to "modal active" to make appear-->
+    <!-- need to add own js to make work -->
+    <div class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <button class="btn btn-clear float-right"></button>
+          <div class="modal-title">Modal title</div>
+        </div>
+        <div class="modal-body">
+          <div class="content">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent risus leo, dictum in vehicula sit amet, feugiat tempus
+            tellus. Duis quis sodales risus. Etiam euismod ornare consequat.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class='btn'>Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- vue.js -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.15/vue.min.js'></script>
+  <script src='domhelpers.js'></script>
+  <script src='index.js'></script>
+</body>
+
+</html>
