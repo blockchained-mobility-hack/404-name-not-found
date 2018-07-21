@@ -104,7 +104,7 @@ Future<List<Result>> getResults(
   Result start = new Result(
     distanceSoFar: 0,
     distance: airport1.distance,
-    title: 'Carsharing zum Flughafen ' + airport1.name,
+    title: 'Carsharing to the airport ' + airport1.name,
     price: 0.36 * airport1.distance,
     type: TravelType.carsharing,
   );
@@ -120,7 +120,7 @@ Future<List<Result>> getResults(
   Result flight = new Result(
     distanceSoFar: airport1.distance,
     distance: distanceFlight,
-    title: 'Flug',
+    title: 'Flight',
     price: flightPrice,
     type: TravelType.plane,
   );
@@ -128,7 +128,7 @@ Future<List<Result>> getResults(
   Result end = new Result(
     distanceSoFar: start.distance + flight.distance,
     distance: airport2.distance,
-    title: 'Carsharing vom Flughafen ' + airport2.name,
+    title: 'Carsharing from the airport ' + airport2.name,
     price: 0.36 * airport2.distance,
     type: TravelType.carsharing,
   );
