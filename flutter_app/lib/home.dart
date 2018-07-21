@@ -3,14 +3,7 @@ part of 'main.dart';
 class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
 
-  ListView buildSearchView() {
-    return ListView(
-          children: [
-            buildSearchButton('Please choose your start'),
-            buildSearchButton('Please choose your target'),
-          ],
-        );
-  }
+  
 
   FlatButton buildSearchButton(text) {
     return FlatButton(
@@ -31,47 +24,15 @@ class _MyHomePageState extends State<MyHomePage> {
       child: new Text(text));
   }
 
-  Widget titleSection = Container(
-    padding: const EdgeInsets.all(32.0),
-    child: Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'Oeschinen Lake Campground',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Text(
-                'Kandersteg, Switzerland',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Icon(
-          Icons.star,
-          color: Colors.red[500],
-        ),
-        Text('41'),
-      ],
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     List<Step> my_steps = [
       new Step(
           title: new Text("Step 1"),
-          content: buildSearchView(),
+          content: Column(children: [
+            buildSearchButton("What is your start location?"),
+            buildSearchButton("What is your target location?")]
+          ),
           isActive: true),
       new Step(
           title: new Text("Step 2"),
@@ -83,18 +44,6 @@ class _MyHomePageState extends State<MyHomePage> {
           content: new Text("Hello World!"),
           isActive: true),
     ];
-
-    /*return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-      ),
-      body: ListView(
-          children: [
-            buildSearchButton('Please choose your start'),
-            buildSearchButton('Please choose your target'),
-          ],
-        )
-    );*/
 
     return new Scaffold(
       appBar: new AppBar(
