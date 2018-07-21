@@ -2,6 +2,9 @@
 
 const Web3 = require('web3');
 
+const WebSocket = require('ws');
+
+
 const contractData = require('../build/contracts/MobilityPlatform.json')
 
 const Promise = require('bluebird')
@@ -18,6 +21,8 @@ app.use(express.static(`${__dirname}/../public`))
 const port = process.env.PORT || 8000
 const server = require('http').Server(app)
 
+const wss = new WebSocket.Server({ port: 8080 });
+
 // boilerplate version
 const version = `Express-Boilerplate v${require('../package.json').version}`
 
@@ -29,6 +34,10 @@ server.listen(port, async () => {
     await initializeMobilityContract()
     await initializeUserAccount()
     await initalizeServiceAccount()
+})
+
+wss.on('connection', function connection(ws) {
+    ws.send('connected')
 })
 
 // 'body-parser' middleware for POST
@@ -82,19 +91,22 @@ app.post('/api/users', jsonParser, (req, res) => {
     // create user in req.body
 })
 
-app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, (req, res) => {
-    // TO BE CALLED BY MOCKED SERVICE PROVIDER
+app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, async (req, res) => {
     const offerId = req.body.offerId
     const timeStarted = Date.parse(req.body.timeStarted)
     const proposedPricePerKilometer = req.body.proposedPrice
     const numberOfKilometers = req.body.numberOfKilometers
 
-    const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, serviceBlockchainAddress) // DEBUG purposes
 
-    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION proposeServiceUsage
 
-    const event = "ServiceUsageProposalSaved"
-    // TODO when event is returned, publish topic on web sockets for APP
+    await web3.eth.personal.unlockAccount(serviceBlockchainAddress, serviceBlockchainPassword)
+    const transactionToBeSend = deployedContract.methods.proposeServiceUsage(offerId,timeStarted,proposedPricePerKilometer,numberOfKilometers);
+    const gasEstimation = transactionToBeSend.estimateGas()
+    const commitedTransaction = await transactionToBeSend.send()
+    const commitedTransactionEvent = commitedTransaction.event
+    ws.send(event)
+
     res.setHeader('Content-Type', 'application/json')
     res.send(JSON.stringify({event}))
     if (!req.body) return res.sendStatus(400)
