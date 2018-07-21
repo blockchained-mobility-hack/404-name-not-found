@@ -52,17 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            new Text(
-              'You have pushed the button this many times:',
-            ),
-            new Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          new RaisedButton(
+            new FlatButton(
               onPressed: () async {
-                // show input autocomplete with selected mode
-                // then get the Prediction selected
                 Prediction p = await showGooglePlacesAutocomplete(
                     context: context,
                     apiKey: kGoogleApiKey,
@@ -76,7 +67,41 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 displayPrediction(p, homeScaffoldKey.currentState);
               },
-              child: new Text("Search places")),
+              child: new Text("Please enter your start location")),
+            new FlatButton(
+              onPressed: () async {
+                Prediction p = await showGooglePlacesAutocomplete(
+                    context: context,
+                    apiKey: kGoogleApiKey,
+                    onError: (res) {
+                      homeScaffoldKey.currentState.showSnackBar(
+                          new SnackBar(content: new Text(res.errorMessage)));
+                    },
+                    mode: Mode.fullscreen,
+                    language: "de",
+                    components: [new Component(Component.country, "de")]);
+
+                displayPrediction(p, homeScaffoldKey.currentState);
+              },
+              child: new Text("Please enter your target location")),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Please enter your start location'
+              ),
+            ),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Please enter your target location'
+              ),
+            ),
+            new Text(
+              'You have pushed the button this many times:',
+            ),
+            new Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.display1,
+            ),
+          
           ],
         ),
       ),
