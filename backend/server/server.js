@@ -44,7 +44,8 @@ app.post('/api/users', jsonParser, (req, res) => {
   // create user in req.body
 });
 
-app.post('/api/mobility-platform/propose-service-usage', jsonParser, (req, res) => {
+app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, (req, res) => {
+    // TO BE CALLED BY MOCKED SERVICE PROVIDER
     const offerId = req.body.offerId
     const timeStarted = Date.parse(req.body.timeStarted)
     const proposedPricePerKilometer = req.body.proposedPrice
@@ -61,7 +62,7 @@ app.post('/api/mobility-platform/propose-service-usage', jsonParser, (req, res) 
     if (!req.body) return res.sendStatus(400)
 })
 
-app.post('/api/mobility-platform/accept-service', jsonParser, (req, res) => {
+app.post('/api/mobile-app/mobility-platform/mobile/accept-service', jsonParser, (req, res) => {
     const offerId = req.body.offerId
 
     const userBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
@@ -74,7 +75,7 @@ app.post('/api/mobility-platform/accept-service', jsonParser, (req, res) => {
     // create user in req.body
 })
 
-app.post('/api/mobility-platform/finishServiceUsage', jsonParser, (req, res) => {
+app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParser, (req, res) => {
     const offerId = req.body.offerId
     const timeFinished = Date.parse(req.body.timeFinished)
     const numberOfKilometersTraveled = req.body.numberOfKilometersPassed
@@ -86,6 +87,7 @@ app.post('/api/mobility-platform/finishServiceUsage', jsonParser, (req, res) => 
     const event = "ServiceFinished"
     res.setHeader('Content-Type', 'application/json')
     res.send(JSON.stringify({event}))
+    // TODO when event is returned, publish topic on web sockets for APP
     if (!req.body) return res.sendStatus(400)
 })
 
