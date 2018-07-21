@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     return new Scaffold(
+      key: homeScaffoldKey,
       appBar: new AppBar(
         title: new Text(widget.title),
       ),
