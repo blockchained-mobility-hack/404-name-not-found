@@ -176,24 +176,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 displayPrediction(p, homeScaffoldKey.currentState);
               },
               child: new Text("Please enter your target location")),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Please enter your start location'
-              ),
-            ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Please enter your target location'
-              ),
-            ),
-            new Text(
-              'You have pushed the button this many times:',
-            ),
-            new Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          
           ],
         ),
       ),
