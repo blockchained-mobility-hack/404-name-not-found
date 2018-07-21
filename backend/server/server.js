@@ -1,16 +1,15 @@
 'use strict'
 
-const Web3 = require('web3');
-
-const WebSocket = require('ws');
-
-
-const contractData = require('../build/contracts/MobilityPlatform.json')
+const WebSocket = require('ws')
 
 const Promise = require('bluebird')
 // custom logger
 const log = require('./logger.js')
 const express = require('express')
+
+const blockchain = require('../blockchain/api')
+
+blockchain.initializeSmartContract().then(() => console.log("Contracts and accounts initalized"))
 
 const app = express()
 
@@ -21,7 +20,7 @@ app.use(express.static(`${__dirname}/../public`))
 const port = process.env.PORT || 8000
 const server = require('http').Server(app)
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({port: 8080})
 
 // boilerplate version
 const version = `Express-Boilerplate v${require('../package.json').version}`
@@ -30,10 +29,6 @@ const version = `Express-Boilerplate v${require('../package.json').version}`
 server.listen(port, async () => {
     log.info(version)
     log.info(`Listening on port ${port}`)
-    await inializeWeb3()
-    await initializeMobilityContract()
-    await initializeUserAccount()
-    await initalizeServiceAccount()
 })
 
 wss.on('connection', function connection(ws) {
@@ -48,36 +43,6 @@ const jsonParser = bodyParser.json()
 const urlencodedParser = bodyParser.urlencoded({
     extended: false
 })
-
-const rpcUrl = "http://localhost:8545/"
-
-let deployedContract, web3, contractOwnerAddress, contractOwnerPassword = "owner"
-
-let userBlockchainAddress, userBlockchainPassword = "userPassword" // TODO - add identity management?
-
-let serviceBlockchainAddress, serviceBlockchainPassword = "servicePassword"
-
-const inializeWeb3 = async () => {
-    web3 = new (Web3)(rpcUrl)
-}
-
-const initializeMobilityContract = async () => {
-    const rpcUrl = "http://localhost:8545/"
-    contractOwnerAddress = await web3.eth.personal.newAccount(contractOwnerPassword)
-    await web3.eth.personal.unlockAccount(contractOwnerAddress, contractOwnerPassword)
-    const testContract = new web3.eth.Contract(contractData.abi)
-    const deployTransaction = testContract.deploy({data: contractData.bytecode, arguments: []})
-    const estimatedGas = await deployTransaction.estimateGas()
-    deployedContract = await deployTransaction.send({gas: estimatedGas, from: contractOwnerAddress})
-}
-
-const initializeUserAccount = async () => {
-    userBlockchainAddress = await web3.eth.personal.newAccount(userBlockchainPassword)
-}
-
-const initalizeServiceAccount = async () => {
-    serviceBlockchainAddress = await web3.eth.personal.newAccount(serviceBlockchainPassword)
-}
 
 // POST /login gets urlencoded bodies
 app.post('/login', urlencodedParser, (req, res) => {
@@ -99,9 +64,9 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
 
     console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, serviceBlockchainAddress) // DEBUG purposes
 
-
-    await web3.eth.personal.unlockAccount(serviceBlockchainAddress, serviceBlockchainPassword)
-    const transactionToBeSend = deployedContract.methods.proposeServiceUsage(offerId,timeStarted,proposedPricePerKilometer,numberOfKilometers);
+    await blockchain.unlockBlockchainAccount(serviceBlockchainAddress, serviceBlockchainPassword)
+    const transactionToBeSend = blockchain.deployedContract.methods.proposeServiceUsage(offerId, timeStarted,
+        proposedPricePerKilometer, numberOfKilometers)
     const gasEstimation = transactionToBeSend.estimateGas()
     const commitedTransaction = await transactionToBeSend.send()
     const commitedTransactionEvent = commitedTransaction.event
