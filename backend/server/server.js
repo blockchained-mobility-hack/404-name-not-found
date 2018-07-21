@@ -1,48 +1,86 @@
-'use strict';
+'use strict'
 
-const Promise = require('bluebird');
+const Web3 = require('web3');
+
+const contractData = require('../build/contracts/MobilityPlatform.json')
+
+const Promise = require('bluebird')
 // custom logger
-const log = require('./logger.js');
-const express = require('express');
+const log = require('./logger.js')
+const express = require('express')
 
-const app = express();
+const app = express()
 
-app.use(require('helmet')()); // use helmet
-app.use(require('cors')()); // enable CORS
+app.use(require('helmet')()) // use helmet
+app.use(require('cors')()) // enable CORS
 // serves all static files in /public
-app.use(express.static(`${__dirname}/../public`));
-const port = process.env.PORT || 8000;
-const server = require('http').Server(app);
+app.use(express.static(`${__dirname}/../public`))
+const port = process.env.PORT || 8000
+const server = require('http').Server(app)
 
 // boilerplate version
-const version = `Express-Boilerplate v${require('../package.json').version}`;
+const version = `Express-Boilerplate v${require('../package.json').version}`
 
 // start server
-server.listen(port, () => {
-  log.info(version);
-  log.info(`Listening on port ${port}`);
-});
+server.listen(port, async () => {
+    log.info(version)
+    log.info(`Listening on port ${port}`)
+    await inializeWeb3()
+    await initializeMobilityContract()
+    await initializeUserAccount()
+    await initalizeServiceAccount()
+})
 
 // 'body-parser' middleware for POST
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser')
 // create application/json parser
-const jsonParser = bodyParser.json();
+const jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({
-  extended: false,
-});
+    extended: false
+})
+
+const rpcUrl = "http://localhost:8545/"
+
+let deployedContract, web3, contractOwnerAddress, contractOwnerPassword = "owner"
+
+let userBlockchainAddress, userBlockchainPassword = "userPassword" // TODO - add identity management?
+
+let serviceBlockchainAddress, serviceBlockchainPassword = "servicePassword"
+
+const inializeWeb3 = async () => {
+    web3 = new (Web3)(rpcUrl)
+}
+
+const initializeMobilityContract = async () => {
+    const rpcUrl = "http://localhost:8545/"
+    contractOwnerAddress = await web3.eth.personal.newAccount(contractOwnerPassword)
+    await web3.eth.personal.unlockAccount(contractOwnerAddress, contractOwnerPassword)
+    const testContract = new web3.eth.Contract(contractData.abi)
+    const deployTransaction = testContract.deploy({data: contractData.bytecode, arguments: []})
+    const estimatedGas = await deployTransaction.estimateGas()
+    deployedContract = await deployTransaction.send({gas: estimatedGas, from: contractOwnerAddress})
+}
+
+const initializeUserAccount = async () => {
+    userBlockchainAddress = await web3.eth.personal.newAccount(userBlockchainPassword)
+}
+
+const initalizeServiceAccount = async () => {
+    serviceBlockchainAddress = await web3.eth.personal.newAccount(serviceBlockchainPassword)
+}
 
 // POST /login gets urlencoded bodies
 app.post('/login', urlencodedParser, (req, res) => {
-  if (!req.body) return res.sendStatus(400);
-  res.send(`welcome, ${req.body.username}`);
-});
+    if (!req.body) return res.sendStatus(400)
+    res.send(`welcome, ${req.body.username}`)
+})
 
 // POST /api/users gets JSON bodies
 app.post('/api/users', jsonParser, (req, res) => {
-  if (!req.body) return res.sendStatus(400);
-  // create user in req.body
-});
+    if (!req.body) return res.sendStatus(400)
+    // create user in req.body
+})
 
 app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, (req, res) => {
     // TO BE CALLED BY MOCKED SERVICE PROVIDER
@@ -82,7 +120,6 @@ app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParse
 
     const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
 
-
     console.log(offerId, timeFinished, numberOfKilometersTraveled, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION finishServiceUsage
     const event = "ServiceFinished"
     res.setHeader('Content-Type', 'application/json')
@@ -90,7 +127,6 @@ app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParse
     // TODO when event is returned, publish topic on web sockets for APP
     if (!req.body) return res.sendStatus(400)
 })
-
 
 // ex. using 'node-fetch' to call JSON REST API
 /*
