@@ -34,7 +34,7 @@ class AirportResult {
 }
 
 Future<double> getFlightPrice(String origin, String destination) async {
-  final response = await callAmadeus('v1/reference-data/locations/airports', {
+  final response = await callAmadeus('v1/shopping/flight-offers', {
     "origin": origin,
     "destination": destination,
     "departureDate": "2018-08-15",
@@ -157,16 +157,4 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() => new _MyHomePageState();
-}
-
-Future<Null> displayPrediction(Prediction p, ScaffoldState scaffold) async {
-  if (p != null) {
-    // get detail (lat/lng)
-    PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
-    final lat = detail.result.geometry.location.lat;
-    final lng = detail.result.geometry.location.lng;
-
-    scaffold.showSnackBar(
-        new SnackBar(content: new Text("${p.description} - $lat/$lng")));
-  }
 }

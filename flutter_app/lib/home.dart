@@ -2,26 +2,56 @@ part of 'main.dart';
 
 class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
+  var results;
 
-  
+  var coordsStart = [null, null];
+  var coordsEnd = [null, null];
 
-  FlatButton buildSearchButton(text) {
+  Future<Null> displayPrediction(
+      Prediction p, ScaffoldState scaffold, String type) async {
+    if (p != null) {
+      // get detail (lat/lng)
+      PlacesDetailsResponse detail =
+          await _places.getDetailsByPlaceId(p.placeId);
+      final lat = detail.result.geometry.location.lat;
+      final lng = detail.result.geometry.location.lng;
+
+      if (type == "start") {
+        coordsStart[0] = lat;
+        coordsStart[1] = lng;
+      }
+      if (type == "end") {
+        coordsEnd[0] = lat;
+        coordsEnd[1] = lng;
+
+        this.results = await getResults(
+            coordsStart[0], coordsStart[1], coordsEnd[0], coordsEnd[1]);
+
+        print(this.results);
+      }
+
+      scaffold.showSnackBar(
+          new SnackBar(content: new Text("${p.description} - $lat/$lng")));
+    }
+  }
+
+  FlatButton buildSearchButton(text, type) {
     return FlatButton(
-      onPressed: () async {
-        Prediction p = await showGooglePlacesAutocomplete(
-            context: context,
-            apiKey: kGoogleApiKey,
-            onError: (res) {
-              homeScaffoldKey.currentState.showSnackBar(
-                  new SnackBar(content: new Text(res.errorMessage)));
-            },
-            mode: Mode.fullscreen,
-            language: "de",
-            components: [new Component(Component.country, "de")]);
+        onPressed: () async {
+          Prediction p = await showGooglePlacesAutocomplete(
+              context: context,
+              apiKey: kGoogleApiKey,
+              onError: (res) {
+                homeScaffoldKey.currentState.showSnackBar(
+                    new SnackBar(content: new Text(res.errorMessage)));
+              },
+              mode: Mode.fullscreen,
+              language: "de",
+              components: [new Component(Component.country, "de")]);
 
-        displayPrediction(p, homeScaffoldKey.currentState);
-      },
-      child: new Text(text));
+          displayPrediction(p, homeScaffoldKey.currentState, type);
+        },
+        child: new Text(text));
   }
 
   Column listRoutes() {
@@ -49,8 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
       new Step(
           title: new Text("Step 1"),
           content: Column(children: [
-            buildSearchButton("What is your start location?"),
-            buildSearchButton("What is your target location?"),
+            buildSearchButton("What is your start location?", "start"),
+            buildSearchButton("What is your target location?", "end"),
           ]),
           isActive: true),
       new Step(
@@ -100,7 +130,6 @@ class _MyHomePageState extends State<MyHomePage> {
           print("onStepContinue : " + current_step.toString());
         },
       )),
-
     );
   }
 }
