@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong/latlong.dart';
 
 part 'home.dart';
+part 'splash.dart';
 
 Future<http.Response> callAmadeus(path, params) async {
   Uri apiUrl = new Uri(
@@ -145,7 +146,10 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo hHome Page'),
+      home: new SplashScreen(),
+      routes: <String, WidgetBuilder>{
+       '/home': (BuildContext context) => new MyHomePage(title: 'Flutter Demo hHome Page')
+      },
     );
   }
 }
