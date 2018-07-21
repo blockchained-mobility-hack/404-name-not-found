@@ -16,6 +16,8 @@ Future<http.Response> callAmadeus(path, params) async {
       path: path,
       queryParameters: params);
 
+  print(apiUrl);
+
   return await http.get(
     apiUrl,
     headers: {HttpHeaders.AUTHORIZATION: "Bearer xx"},
@@ -40,12 +42,13 @@ Future<double> getFlightPrice(String origin, String destination) async {
     "departureDate": "2018-08-15",
   });
 
+  print(response.body);
   var decoded = json.decode(response.body);
 
-  var offer = decoded['data']['offerItems'][0];
+  var offer = decoded['data'][0]['offerItems'][0];
   var price = offer['price']['total'];
 
-  return price;
+  return double.parse(price);
 }
 
 Future<AirportResult> fetchAirport(double latitude, double longitude) async {
@@ -55,6 +58,7 @@ Future<AirportResult> fetchAirport(double latitude, double longitude) async {
     "sort": "relevance",
   });
 
+  print(response.statusCode);
   if (response.statusCode == 200) {
     var decoded = json.decode(response.body);
     var result = decoded['data'][0];

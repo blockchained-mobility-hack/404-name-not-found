@@ -4,8 +4,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
   var results;
 
-  var coordsStart = [null, null];
-  var coordsEnd = [null, null];
+  var coordsStart;
+  var coordsEnd;
 
   Future<Null> displayPrediction(
       Prediction p, ScaffoldState scaffold, String type) async {
@@ -17,17 +17,15 @@ class _MyHomePageState extends State<MyHomePage> {
       final lng = detail.result.geometry.location.lng;
 
       if (type == "start") {
-        coordsStart[0] = lat;
-        coordsStart[1] = lng;
+        this.coordsStart = [lat, lng];
       }
       if (type == "end") {
-        coordsEnd[0] = lat;
-        coordsEnd[1] = lng;
+        this.coordsEnd = [lat, lng];
 
-        this.results = await getResults(
-            coordsStart[0], coordsStart[1], coordsEnd[0], coordsEnd[1]);
-
-        print(this.results);
+        setState(() async {
+          this.results = await getResults(
+              coordsStart[0], coordsStart[1], coordsEnd[0], coordsEnd[1]);
+        });
       }
 
       scaffold.showSnackBar(
@@ -55,21 +53,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Column listRoutes() {
+    print(this.results);
+    if (this.results == null) {
+      return Column();
+    }
+    List<Widget> tiles = [];
+    this.results.forEach((result) => tiles.add(ListTile(
+          leading: result.type == TravelType.plane ? Icon(Icons.airplanemode_active) : Icon(Icons.directions_car),
+          title: Text(result.title + " " + result.price.round().toString() + "€"),
+        )));
     return Column(
-      children: <Widget>[
-        ListTile(
-          leading: Icon(Icons.map),
-          title: Text('Map'),
-        ),
-        ListTile(
-          leading: Icon(Icons.photo_album),
-          title: Text('Album'),
-        ),
-        ListTile(
-          leading: Icon(Icons.phone),
-          title: Text('Phone'),
-        ),
-      ],
+      children: tiles,
     );
   }
 
