@@ -44,6 +44,21 @@ app.post('/api/users', jsonParser, (req, res) => {
   // create user in req.body
 });
 
+app.post('/api/mobility-platform/propose-service-usage', jsonParser, (req, res) => {
+    const offerId = req.body.offerId
+    const timeStarted = Date.parse(req.body.timeStarted)
+    const proposedPricePerKilometer = req.body.proposedPrice
+    const numberOfKilometers = req.body.numberOfKilometers
+    const userBlockchainAddress = req.body.userBlockchainAddress // This will be fixed, demo value
+
+    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, userBlockchainAddress) // TODO EXECUTE EVENT ON SMART CONTRACT
+    const event = "ServiceUsageProposalSaved"
+    res.setHeader('Content-Type', 'application/json')
+    res.send(JSON.stringify({event}))
+    if (!req.body) return res.sendStatus(400)
+    // create user in req.body
+})
+
 
 // ex. using 'node-fetch' to call JSON REST API
 /*
