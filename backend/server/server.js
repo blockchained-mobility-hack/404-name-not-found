@@ -49,19 +49,23 @@ app.post('/api/mobility-platform/propose-service-usage', jsonParser, (req, res) 
     const timeStarted = Date.parse(req.body.timeStarted)
     const proposedPricePerKilometer = req.body.proposedPrice
     const numberOfKilometers = req.body.numberOfKilometers
-    const userBlockchainAddress = req.body.userBlockchainAddress // This will be fixed, demo value
 
-    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, userBlockchainAddress) // TODO EXECUTE TRANSACTION proposeServiceUsage AND RETURN EVENT TO APP
+    const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+
+    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION proposeServiceUsage
+
     const event = "ServiceUsageProposalSaved"
+    // TODO when event is returned, publish topic on web sockets for APP
     res.setHeader('Content-Type', 'application/json')
     res.send(JSON.stringify({event}))
     if (!req.body) return res.sendStatus(400)
-    // create user in req.body
 })
 
 app.post('/api/mobility-platform/accept-service', jsonParser, (req, res) => {
     const offerId = req.body.offerId
-    const userBlockchainAddress = req.body.userBlockchainAddress // This will be fixed, demo value
+
+    const userBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+
     console.log(offerId, userBlockchainAddress) // TODO EXECUTE TRANSACTION acceptService AND RETURN EVENT TO APP
     const event = "ServiceAccepted"
     res.setHeader('Content-Type', 'application/json')
@@ -70,6 +74,20 @@ app.post('/api/mobility-platform/accept-service', jsonParser, (req, res) => {
     // create user in req.body
 })
 
+app.post('/api/mobility-platform/finishServiceUsage', jsonParser, (req, res) => {
+    const offerId = req.body.offerId
+    const timeFinished = Date.parse(req.body.timeFinished)
+    const numberOfKilometersTraveled = req.body.numberOfKilometersPassed
+
+    const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+
+
+    console.log(offerId, timeFinished, numberOfKilometersTraveled, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION finishServiceUsage
+    const event = "ServiceFinished"
+    res.setHeader('Content-Type', 'application/json')
+    res.send(JSON.stringify({event}))
+    if (!req.body) return res.sendStatus(400)
+})
 
 
 // ex. using 'node-fetch' to call JSON REST API
