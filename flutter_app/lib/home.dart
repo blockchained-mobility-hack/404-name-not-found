@@ -59,12 +59,21 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     List<Widget> tiles = [];
     this.results.forEach((result) => tiles.add(ListTile(
-          leading: result.type == TravelType.plane ? Icon(Icons.airplanemode_active) : Icon(Icons.directions_car),
-          title: Text(result.title + " " + result.price.round().toString() + "€"),
+          leading: result.type == TravelType.plane
+              ? Icon(Icons.airplanemode_active)
+              : Icon(Icons.directions_car),
+          title:
+              Text(result.title + " " + result.price.round().toString() + "€"),
         )));
     return Column(
       children: tiles,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getAccessTokenAmadeus();
   }
 
   @override

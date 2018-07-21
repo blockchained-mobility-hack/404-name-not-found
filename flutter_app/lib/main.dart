@@ -10,6 +10,21 @@ import 'package:latlong/latlong.dart';
 part 'home.dart';
 part 'splash.dart';
 
+var accessToken = '';
+
+getAccessTokenAmadeus() async {
+  var response = await http.post(
+    'https://test.api.amadeus.com/v1/security/oauth2/token',
+    body: {
+        "grant_type": "client_credentials",
+        "client_id": "xx",
+        "client_secret": "xx",
+      }
+  );
+  accessToken = json.decode(response.body)['access_token'];
+  print(accessToken);
+}
+
 Future<http.Response> callAmadeus(path, params) async {
   Uri apiUrl = new Uri(
       scheme: 'https',
@@ -21,7 +36,7 @@ Future<http.Response> callAmadeus(path, params) async {
 
   return await http.get(
     apiUrl,
-    headers: {HttpHeaders.AUTHORIZATION: "Bearer xx"},
+    headers: {HttpHeaders.AUTHORIZATION: "Bearer " + accessToken},
   );
 }
 
@@ -79,7 +94,7 @@ Future<List<Result>> getResults(
     latitudeStart, longitudeStart, latitudeEnd, longitudeEnd) async {
   final airport1 = await fetchAirport(latitudeStart, longitudeStart);
   final airport2 = await fetchAirport(latitudeEnd, longitudeEnd);
-  
+
   var flightPrice = await getFlightPrice(airport1.code, airport2.code);
 
   List<Result> res = [];
@@ -94,9 +109,11 @@ Future<List<Result>> getResults(
 
   final Distance distance = new Distance();
   var distanceFlight = (distance(
-    new LatLng(airport1.latitude, airport1.longitude),
-    new LatLng(airport2.latitude, airport2.longitude),
-  ) ~/ 1000).toInt();
+            new LatLng(airport1.latitude, airport1.longitude),
+            new LatLng(airport2.latitude, airport2.longitude),
+          ) ~/
+          1000)
+      .toInt();
 
   Result flight = new Result(
     distanceSoFar: airport1.distance,
@@ -152,7 +169,8 @@ class MyApp extends StatelessWidget {
       ),
       home: new SplashScreen(),
       routes: <String, WidgetBuilder>{
-       '/home': (BuildContext context) => new MyHomePage(title: 'Flutter Demo hHome Page')
+        '/home': (BuildContext context) =>
+            new MyHomePage(title: 'Flutter Demo hHome Page')
       },
     );
   }
