@@ -1,5 +1,6 @@
 part of 'main.dart';
 
+
 class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
   var results;
@@ -38,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           Prediction p = await showGooglePlacesAutocomplete(
               context: context,
-              apiKey: kGoogleApiKey,
+              apiKey: secrets.googlePlacesApi,
               onError: (res) {
                 homeScaffoldKey.currentState.showSnackBar(
                     new SnackBar(content: new Text(res.errorMessage)));

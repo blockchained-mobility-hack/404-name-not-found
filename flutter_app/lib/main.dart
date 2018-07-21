@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong/latlong.dart';
 
+import 'secrets.dart' as secrets;
+
 part 'home.dart';
 part 'splash.dart';
 
@@ -134,8 +136,7 @@ class Result {
       {this.type, this.distanceSoFar, this.distance, this.title, this.price});
 }
 
-const kGoogleApiKey = "AIzaSyA0TtT66-MIIYTqFBadycf-DfNd-J9lXe0";
-GoogleMapsPlaces _places = new GoogleMapsPlaces(kGoogleApiKey);
+GoogleMapsPlaces _places = new GoogleMapsPlaces(secrets.googlePlacesApi);
 
 final homeScaffoldKey = new GlobalKey<ScaffoldState>();
 
