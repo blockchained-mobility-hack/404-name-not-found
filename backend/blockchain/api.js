@@ -20,11 +20,12 @@ async function initializeSmartContract() {
 
     deployedErcEuroToken = await initializeContract(euroErcContractData.abi, euroErcContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
     console.log("ERC20 Euro token contract", deployedErcEuroToken._address)
+
     await unlockBlockchainAccount(userBlockchainAddress, userBlockchainPassword)
+    console.log("ERC 20 owner address", userBlockchainAddress)
 
     deployedMobilityContract = await initializeContract(mobilityContractData.abi, mobilityContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
     console.log("Mobility contract address", deployedMobilityContract._address)
-    userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     serviceBlockchainAddress = await initializeBlockchainAccount(serviceBlockchainPassword)
 }
 

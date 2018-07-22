@@ -4,9 +4,13 @@
   "description": "Service provider cli",
   "main": "index.js",
   "scripts": {
-    "start": "node ser"
+    "start": "node serviceProviderCli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "chalk-animation": "^1.6.0",
+    "commander": "^2.16.0"
+  }
 }

@@ -127,6 +127,8 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
 
         const service = blockchain.getAccount("service")
         const user = blockchain.getAccount("user")
+        console.log("User account address", user.blockchainAddress)
+        console.log("Service address", service.blockchainAddress)
         await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
         const transactionToBeSend = blockchain.getMobilityContract().
             methods.
@@ -141,20 +143,20 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
             return res.sendStatus(422)
         }
 
-        const response = JSON.stringify(
+        const response =
             {
                 offerId: committedTransactionEvent.returnValues.offerId,
                 provider: committedTransactionEvent.returnValues.provider,
                 pricePerKm: committedTransactionEvent.returnValues.pricePerKm,
                 validUntil: committedTransactionEvent.returnValues.validUntil,
                 hashv: committedTransactionEvent.returnValues.hashV
-            })
+            }
         if (websocket) {
             const webSocketResponse = Object.assign({}, {type: "proposal"}, response)
             websocket.send(JSON.stringify(webSocketResponse))
         }
         res.setHeader('Content-Type', 'application/json')
-        res.send(response)
+        res.send(JSON.stringify(response))
     }
     catch (err) {
         console.log(err)
@@ -252,18 +254,18 @@ app.post('/api/mobility-platform/service-provider/start-service-usage', jsonPars
             return res.sendStatus(422)
         }
 
-        const response = JSON.stringify(
+        const response =
             {
                 offerId: committedTransactionEvent.returnValues.offerId,
                 serviceUsageStartTime: committedTransactionEvent.returnValues.serviceUsageStartTime,
                 hashv: committedTransactionEvent.returnValues.hashV
-            })
+            }
         if (websocket) {
             const webSocketResponse = Object.assign({}, {type: "started"}, response)
             websocket.send(JSON.stringify(webSocketResponse))
         }
         res.setHeader('Content-Type', 'application/json')
-        res.send(response)
+        res.send(JSON.stringify(response))
     }
     catch (err) {
         console.log(err)
