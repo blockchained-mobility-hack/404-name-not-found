@@ -11,17 +11,17 @@ import "./erc20/StandardToken.sol";
  */
 contract EuroToken is StandardToken {
 
-  string public name = "EuroToken";
-  string public symbol = "EUR";
-  uint256 public decimals = 2;
-  uint256 public INITIAL_SUPPLY = 1000000000;
+    string public name = "EuroToken";
+    string public symbol = "EUR";
+    uint256 public decimals = 2;
+    uint256 public INITIAL_SUPPLY = 1000000000;
 
-  /**
-   * @dev Contructor that gives msg.sender all of existing tokens.
-   */
-  function EuroToken() public {
-    totalSupply_ = INITIAL_SUPPLY;
-    balances[msg.sender] = INITIAL_SUPPLY;
-  }
+    /**
+     * @dev Contructor that gives msg.sender all of existing tokens.
+     */
+    constructor() public {
+        totalSupply_ = INITIAL_SUPPLY;
+        balances[msg.sender] = INITIAL_SUPPLY;
+    }
 
 }
