@@ -14,6 +14,7 @@ import 'secrets.dart' as secrets;
 
 part 'home.dart';
 part 'splash.dart';
+part 'backend.dart';
 
 var accessToken = '';
 
