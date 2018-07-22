@@ -1,0 +1,22 @@
+[parity]
+chain = "spec/mobiPay.json"
+
+[ui]
+interface = "all"
+force = true
+
+[rpc]
+hosts = ["all"]
+apis = ["all"]
+interface = "all"
+
+[websockets]
+interface = "all"
+origins = ["all"]
+
+[account]
+unlock = ["0x00204b76ae9389d61f340c579a22b8737dc53ef7"]
+password = ["spec/pwd"]
+
+[mining]
+engine_signer = "0x00204b76ae9389d61f340c579a22b8737dc53ef7"

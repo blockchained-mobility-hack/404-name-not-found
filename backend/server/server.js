@@ -110,7 +110,7 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
         const committedTransactionEvent = committedTransaction.events.ServiceUsageProposed
 
         if (!committedTransactionEvent) {
-            res.sendStatus(422)
+            return res.sendStatus(422)
         }
 
         const response = JSON.stringify(
@@ -149,7 +149,7 @@ app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, asyn
         const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalAccepted
 
         if (!committedTransactionEvent) {
-            res.sendStatus(422)
+            return res.sendStatus(422)
         }
 
         const response = JSON.stringify(
@@ -181,7 +181,7 @@ app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, asy
         const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalDeclined
 
         if (!committedTransactionEvent) {
-            res.sendStatus(422)
+            return res.sendStatus(422)
         }
 
         const response = JSON.stringify(
@@ -216,7 +216,7 @@ app.post('/api/mobility-platform/service-provider/start-service-usage', jsonPars
         const committedTransactionEvent = committedTransaction.events.ServiceUsageStarted
 
         if (!committedTransactionEvent) {
-            res.sendStatus(422)
+            return res.sendStatus(422)
         }
 
         if (websocket) {
@@ -259,7 +259,7 @@ app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonPar
         const paymentEvent = committedTransaction.events.ServiceUsagePayedUp
 
         if (!serviceUsageEndedEvent) {
-            res.sendStatus(422)
+            return res.sendStatus(422)
         }
 
         const response =
