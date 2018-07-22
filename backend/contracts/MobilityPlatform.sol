@@ -42,23 +42,37 @@ contract MobilityPlatform {
 
         emit ServiceUsageProposed(offerId, provider, pricePerKm, offerValidUntil, usageRecords[offerId].hashv);
     }
-    
-    event OfferAcceptedForYou(uint offerid, address user, address acceptingaddress, address provider);
+
     function acceptProposedOffer(uint offerId) public {
-        if (usageRecords[offerId].status != Status.OfferProposed) revert();
-        if (usageRecords[offerId].user != msg.sender) {
-            emit OfferAcceptedForYou(offerId, usageRecords[offerId].user, msg.sender, usageRecords[offerId].provider );
-//            revert();
+        Status expectedStatus = Status.OfferProposed;
+        address checkedAddress = usageRecords[offerId].user;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+        
+            // actually offer shall be rejected, but for test purposes we are accepting it, that's why in case
+            // the contact status is correct the processing is continued
+            if (usageRecords[offerId].status != expectedStatus) {
+                return;
+            }
         }
         
+        if (usageRecords[offerId].user != msg.sender) {
+            emit OfferAcceptedForYou(offerId, usageRecords[offerId].user, msg.sender, usageRecords[offerId].provider);
+        }
+
+
         usageRecords[offerId].status = Status.OfferAccepted;
     
         emit ServiceUsageProposalAccepted(offerId);
     }
 
     function declineProposedOffer(uint offerId) public {
-        if (usageRecords[offerId].status != Status.OfferProposed) revert();
-//        if (usageRecords[offerId].user != msg.sender) revert();
+        Status expectedStatus = Status.OfferProposed;
+        address checkedAddress = usageRecords[offerId].user;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+            return;
+        }
         
         usageRecords[offerId].status = Status.OfferDeclined;
     
@@ -66,9 +80,14 @@ contract MobilityPlatform {
     }
 
     function startServiceUsage(uint offerId, uint serviceUsageStartTime) public {
-        if (usageRecords[offerId].status != Status.OfferAccepted) revert();
-//        if (usageRecords[offerId].provider != msg.sender) revert();
-        
+        Status expectedStatus = Status.OfferAccepted;
+        address checkedAddress = usageRecords[offerId].provider;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+            return;
+        }
+
+
         usageRecords[offerId].status = Status.UsageStarted;
         usageRecords[offerId].serviceUsageStartTime = serviceUsageStartTime;
   //      usageRecords[offerId].hashv = keccak256(usageRecords[offerId]);
@@ -77,9 +96,13 @@ contract MobilityPlatform {
     }
 
     function finishServiceUsage(uint offerId, uint serviceUsageEndTime, uint distanceTravelled) public {
-        if (usageRecords[offerId].status != Status.UsageStarted) revert();
-//        if (usageRecords[offerId].provider != msg.sender) revert();
-   
+        Status expectedStatus = Status.UsageStarted;
+        address checkedAddress = usageRecords[offerId].provider;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+            return;
+        }
+
         usageRecords[offerId].status = Status.UsageEnded;
         usageRecords[offerId].serviceUsageEndTime = serviceUsageEndTime;
         usageRecords[offerId].distanceTravelled = distanceTravelled;
@@ -93,9 +116,13 @@ contract MobilityPlatform {
     }
 
     function executePayment(uint offerId) public {
-        if (usageRecords[offerId].status != Status.UsageEnded) revert();
-//        if (usageRecords[offerId].provider != msg.sender && usageRecords[offerId].user != msg.sender) revert();
-        
+        Status expectedStatus = Status.UsageEnded;
+        address checkedAddress = usageRecords[offerId].provider;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+            return;
+        }
+
         uint price = usageRecords[offerId].totalPrice;
         if (userAccountBalance[usageRecords[offerId].user] < price) {
             emit PaymentFailedDueToUnsufficientFunds(offerId);
@@ -126,5 +153,11 @@ contract MobilityPlatform {
     event ServiceUsagePayedUp(uint offerId, string hashv);
     event PaymentFailedDueToUnsufficientFunds(uint offerId);
     event PaymentFailedDueToBalanceOverflow(uint offerId);
+
+    // warning events
+    event OfferAcceptedForYou(uint offerId, address user, address acceptingaddress, address provider); 
+
+    // error events
+    event ContractChangeRejected(uint offerId, address checkedAddr, address callingAddr, Status cState, Status expCState);
 }
 
