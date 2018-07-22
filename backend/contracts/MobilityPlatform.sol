@@ -6,12 +6,6 @@ contract MobilityPlatform {
 
     enum Status { OfferProposed, OfferAccepted, OfferDeclined, UsageStarted, UsageEnded, Paid }
 
-    ERC20 balanceBook;
-
-    constructor(ERC20 token) public {
-        balanceBook = token;
-    }
-
     struct UsageRecord {
         uint offerId;
         address provider;
@@ -112,11 +106,9 @@ contract MobilityPlatform {
         uint totalPrice = usageRecords[offerId].distanceTravelled * usageRecords[offerId].pricePerKm;
         usageRecords[offerId].totalPrice = totalPrice;
         emit ServiceUsageEnded(offerId, serviceUsageEndTime, distanceTravelled, totalPrice, usageRecords[offerId].hashv);
-
-        executePayment(offerId);
     }
 
-    function executePayment(uint offerId) public {
+    function executePayment(ERC20 balanceBook, uint offerId) public {
         Status expectedStatus = Status.UsageEnded;
         address checkedAddress = usageRecords[offerId].provider;
         if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) {
