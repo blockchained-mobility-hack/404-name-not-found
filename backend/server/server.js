@@ -45,14 +45,33 @@ const urlencodedParser = bodyParser.urlencoded({
     extended: false
 })
 
-app.post('/api/mobility-platform/usage-record', jsonParser, async (req, res) => {
-    const offerId = req.body.offerId
-    console.log(offerId)
+const statusMapping = {
+    0: 'OfferProposed',
+    1: 'OfferAccepted',
+    2: 'OfferDeclined',
+    3: 'UsageStarted',
+    4: 'UsageEnded',
+    5: 'Paid'
+}
 
+app.get('/api/mobility-platform/usage-record/:offerId', jsonParser, async (req, res) => {
+    const offerId = req.params.offerId
     const user = blockchain.getAccount("user")
     const transactionToBeSend = blockchain.getMobilityContract().methods.getUsageRecord(offerId)
     const data = await transactionToBeSend.call({from: user.blockchainAddress})
-    const response = JSON.stringify({data})
+    const response = JSON.stringify({
+        offerId: data[0],
+        provider: data[1],
+        user: data[2],
+        offerValidUntil: data[3],
+        serviceUsageStartTime: data[4],
+        serviceUsageEndTime: data[5],
+        distanceTravelled: data[6],
+        pricePerKm: data[7],
+        totalPrice: data[8],
+        status: statusMapping[data[9]],
+        hashv: data[10]
+    })
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
     if (!req.body) return res.sendStatus(400)
