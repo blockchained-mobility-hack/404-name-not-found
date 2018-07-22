@@ -55,6 +55,8 @@ const statusMapping = {
 }
 
 app.get('/api/mobility-platform/usage-record/:offerId', jsonParser, async (req, res) => {
+    if (!req.params) return res.sendStatus(400)
+
     const offerId = req.params.offerId
     const user = blockchain.getAccount("user")
     const transactionToBeSend = blockchain.getMobilityContract().methods.getUsageRecord(offerId)
@@ -74,10 +76,11 @@ app.get('/api/mobility-platform/usage-record/:offerId', jsonParser, async (req, 
     })
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
-    if (!req.body) return res.sendStatus(400)
 })
 
 app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, async (req, res) => {
+    if (!req.body) return res.sendStatus(400)
+
     const offerId = req.body.offerId
     const offerValidUntil = moment(req.body.offerValidUntil).unix()
     const pricePerKm = req.body.pricePerKm
@@ -105,10 +108,11 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
     }
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
-    if (!req.body) return res.sendStatus(400)
 })
 
 app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, async (req, res) => {
+    if (!req.body) return res.sendStatus(400)
+
     const offerId = req.body.offerId
 
     const user = blockchain.getAccount("user")
@@ -125,10 +129,11 @@ app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, asyn
         })
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
-    if (!req.body) return res.sendStatus(400)
 })
 
 app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, async (req, res) => {
+    if (!req.body) return res.sendStatus(400)
+
     const offerId = req.body.offerId
 
     const user = blockchain.getAccount("user")
@@ -145,21 +150,26 @@ app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, asy
         })
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
-    if (!req.body) return res.sendStatus(400)
 })
 
-app.post('/api/mobility-platform/mobile/start-service-usage', jsonParser, async (req, res) => {
+app.post('/api/mobility-platform/service-provider/start-service-usage', jsonParser, async (req, res) => {
+    if (!req.body) return res.sendStatus(400)
+
     const offerId = req.body.offerId
     const serviceUsageStartTime = moment(req.body.serviceUsageStartTime).unix()
 
-    const user = blockchain.getAccount("user")
+    const service = blockchain.getAccount("service")
 
-    await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
-    const transactionToBeSend = blockchain.getMobilityContract().methods.startServiceUsage(offerId, serviceUsageStartTime)
+    await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+    const transactionToBeSend = blockchain.getMobilityContract().
+        methods.
+        startServiceUsage(offerId, serviceUsageStartTime)
     const gasEstimation = transactionToBeSend.estimateGas()
-    const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: user.blockchainAddress})
+    const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: service.blockchainAddress})
     const committedTransactionEvent = committedTransaction.events.ServiceUsageStarted
-
+    if (websocket) {
+        websocket.send(response)
+    }
     const response = JSON.stringify(
         {
             offerId: committedTransactionEvent.returnValues.offerId,
@@ -168,20 +178,46 @@ app.post('/api/mobility-platform/mobile/start-service-usage', jsonParser, async 
         })
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
-    if (!req.body) return res.sendStatus(400)
 })
 
-app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParser, (req, res) => {
-    const offerId = req.body.offerId
-    const timeFinished = Date.parse(req.body.timeFinished)
-    const numberOfKilometersTraveled = req.body.numberOfKilometersPassed
-
-    const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
-
-    console.log(offerId, timeFinished, numberOfKilometersTraveled, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION finishServiceUsage
-    const event = "ServiceFinished"
-    res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify({event}))
-    // TODO when event is returned, publish topic on web sockets for APP
+app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonParser, async (req, res) => {
     if (!req.body) return res.sendStatus(400)
+
+    const offerId = req.body.offerId
+    const serviceUsageEndTime = moment(req.body.serviceUsageEndTime).unix()
+    const distanceTravelled = req.body.distanceTravelled
+
+    const service = blockchain.getAccount("service")
+    const user = blockchain.getAccount("user")
+
+    await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+    const transactionToBeSend = blockchain.getMobilityContract().
+        methods.
+        finishServiceUsage(offerId, serviceUsageEndTime, distanceTravelled)
+    const gasEstimation = transactionToBeSend.estimateGas()
+    const committedTransaction = await transactionToBeSend.send(
+        {gas: (gasEstimation * 2), from: service.blockchainAddress})
+    const serviceUsageEndedEvent = committedTransaction.events.ServiceUsageEnded
+    const paymentEvent = committedTransaction.events.ServiceUsagePayedUp
+
+    const response =
+        {
+            offerId: serviceUsageEndedEvent.returnValues.offerId,
+            serviceUsageEndTime: serviceUsageEndedEvent.returnValues.serviceUsageEndTime,
+            distanceTravelled: serviceUsageEndedEvent.returnValues.distanceTravelled,
+            totalPrice: serviceUsageEndedEvent.returnValues.validUntil,
+            hashv: serviceUsageEndedEvent.returnValues.hashV
+
+        }
+
+    res.setHeader('Content-Type', 'application/json')
+    const paymentSucceced = Boolean(paymentEvent)
+
+    if (websocket) {
+        const webSocketResponse = Object.assign({}, {paymentSucceced}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
+    }
+
+    paymentSucceced ? res.status(200).send(JSON.stringify(response)) : res.status(422).send(JSON.stringify(response))
+
 })
