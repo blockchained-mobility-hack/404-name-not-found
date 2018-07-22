@@ -1,0 +1,12 @@
+{
+  "name": "service-provider-cli",
+  "version": "1.0.0",
+  "description": "Service provider cli",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ser"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

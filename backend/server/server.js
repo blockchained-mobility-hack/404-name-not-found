@@ -89,6 +89,34 @@ app.get('/api/mobility-platform/usage-record/:offerId', jsonParser, async (req, 
     }
 })
 
+app.get('/api/mobility-platform/euro-token/balance', jsonParser, async (req, res) => {
+    try {
+
+        const user = blockchain.getAccount("user")
+        const transactionToBeSend = blockchain.getMobilityContract().methods.getUsageRecord(offerId)
+        const data = await transactionToBeSend.call({from: user.blockchainAddress})
+        const response = JSON.stringify({
+            offerId: data[0],
+            provider: data[1],
+            user: data[2],
+            offerValidUntil: data[3],
+            serviceUsageStartTime: data[4],
+            serviceUsageEndTime: data[5],
+            distanceTravelled: data[6],
+            pricePerKm: data[7],
+            totalPrice: data[8],
+            status: statusMapping[data[9]],
+            hashv: data[10]
+        })
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, async (req, res) => {
     try {
         if (!req.body) return res.sendStatus(400)
@@ -122,7 +150,8 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
                 hashv: committedTransactionEvent.returnValues.hashV
             })
         if (websocket) {
-            websocket.send(response)
+            const webSocketResponse = Object.assign({}, {type: "proposal"}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
         }
         res.setHeader('Content-Type', 'application/json')
         res.send(response)
@@ -136,8 +165,12 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
 app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, async (req, res) => {
     try {
         if (!req.body) return res.sendStatus(400)
+        console.log(req.body)
+        console.log(req.body.offerId)
+        const offerId = parseFloat(req.body.offerId)
 
-        const offerId = req.body.offerId
+        console.log(offerId)
+
 
         const user = blockchain.getAccount("user")
 
@@ -219,15 +252,16 @@ app.post('/api/mobility-platform/service-provider/start-service-usage', jsonPars
             return res.sendStatus(422)
         }
 
-        if (websocket) {
-            websocket.send(response)
-        }
         const response = JSON.stringify(
             {
                 offerId: committedTransactionEvent.returnValues.offerId,
                 serviceUsageStartTime: committedTransactionEvent.returnValues.serviceUsageStartTime,
                 hashv: committedTransactionEvent.returnValues.hashV
             })
+        if (websocket) {
+            const webSocketResponse = Object.assign({}, {type: "started"}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
+        }
         res.setHeader('Content-Type', 'application/json')
         res.send(response)
     }
@@ -248,15 +282,39 @@ app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonPar
         const service = blockchain.getAccount("service")
         const user = blockchain.getAccount("user")
 
+        await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+        const erc20ApproveTransaction = blockchain.getEuroTokenContract().
+            methods.
+            approve(blockchain.getMobilityContract()._address, 100000)
+        const erc20GasEstimate = erc20ApproveTransaction.estimateGas()
+        const erc20CommitedTransaction = await erc20ApproveTransaction.send({
+            gas: (erc20GasEstimate * 2), from: user.blockchainAddress
+        })
+        console.log(erc20CommitedTransaction.events)
+
         await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
-        const transactionToBeSend = blockchain.getMobilityContract().
+        const finishServiceTransaction = blockchain.getMobilityContract().
             methods.
             finishServiceUsage(offerId, serviceUsageEndTime, distanceTravelled)
-        const gasEstimation = transactionToBeSend.estimateGas()
-        const committedTransaction = await transactionToBeSend.send(
-            {gas: (gasEstimation * 2), from: service.blockchainAddress})
+        const finishTransactionGasEstimate = finishServiceTransaction.estimateGas()
+        const committedTransaction = await
+            finishServiceTransaction.send(
+                {gas: (finishTransactionGasEstimate * 2), from: service.blockchainAddress})
         const serviceUsageEndedEvent = committedTransaction.events.ServiceUsageEnded
-        const paymentEvent = committedTransaction.events.ServiceUsagePayedUp
+
+        console.log(committedTransaction.events)
+
+        await
+            blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+        const paymentTransactionToBeSend = blockchain.getMobilityContract().
+            methods.
+            executePayment(blockchain.getEuroTokenContract()._address, offerId)
+        const paymentGasEstimate = paymentTransactionToBeSend.estimateGas()
+        const committedPayment = await
+            paymentTransactionToBeSend.send({gas: (paymentGasEstimate * 2), from: service.blockchainAddress})
+        const paymentEvent = committedPayment.events.ServiceUsagePayedUp
+
+        console.log(committedPayment.events)
 
         if (!serviceUsageEndedEvent) {
             return res.sendStatus(422)
@@ -276,14 +334,15 @@ app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonPar
         const paymentSucceced = Boolean(paymentEvent)
 
         if (websocket) {
-            const webSocketResponse = Object.assign({}, {paymentSucceced}, response)
+            const webSocketResponse = Object.assign({}, {type: "finished"}, {paymentSucceced}, response)
             websocket.send(JSON.stringify(webSocketResponse))
         }
 
         paymentSucceced ? res.status(200).send(JSON.stringify(response)) : res.status(422).
             send(JSON.stringify(response))
     }
-    catch (err) {
+    catch
+        (err) {
         console.log(err)
         res.sendStatus(500)
     }

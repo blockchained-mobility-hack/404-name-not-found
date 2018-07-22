@@ -1,12 +1,13 @@
 'use strict'
 
-const contractData = require('../build/contracts/MobilityPlatform.json')
+const mobilityContractData = require('../build/contracts/MobilityPlatform.json')
+
+const euroErcContractData = require('../build/contracts/EuroToken.json')
 
 const Web3 = require('web3')
 
-let deployedContract, web3
+let deployedMobilityContract, deployedErcEuroToken, web3
 
-let contractOwnerAddress, contractOwnerPassword = "owner"
 
 let userBlockchainAddress, userBlockchainPassword = "userPassword" // TODO - add identity management?
 
@@ -14,12 +15,17 @@ let serviceBlockchainAddress, serviceBlockchainPassword = "servicePassword"
 
 async function initializeSmartContract() {
     await inializeWeb3()
-    contractOwnerAddress = await initializeBlockchainAccount(contractOwnerPassword)
+    userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
+    await unlockBlockchainAccount(userBlockchainAddress, userBlockchainPassword)
+
+    deployedErcEuroToken = await initializeContract(euroErcContractData.abi, euroErcContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
+    console.log("ERC20 Euro token contract", deployedErcEuroToken._address)
+    await unlockBlockchainAccount(userBlockchainAddress, userBlockchainPassword)
+
+    deployedMobilityContract = await initializeContract(mobilityContractData.abi, mobilityContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
+    console.log("Mobility contract address", deployedMobilityContract._address)
     userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     serviceBlockchainAddress = await initializeBlockchainAccount(serviceBlockchainPassword)
-    await unlockBlockchainAccount(contractOwnerAddress, contractOwnerPassword)
-    deployedContract = await initializeContract(contractData.abi, contractData.bytecode, contractOwnerAddress, contractOwnerPassword, userBlockchainAddress)
-    console.log("Contract address", deployedContract._address)
 }
 
 const inializeWeb3 = async () => {
@@ -29,11 +35,12 @@ const inializeWeb3 = async () => {
     }
 }
 
-const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword, userAccountToLoad) => {
+const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword) => {
     const contractInterface = new web3.eth.Contract(abi)
-    const deployTransaction = contractInterface.deploy({data: bytecode, arguments: [userAccountToLoad]})
+    const deployTransaction = contractInterface.deploy({data: bytecode, arguments: []})
     const estimatedGas = await deployTransaction.estimateGas()
-    return deployTransaction.send({gas: estimatedGas, from: contractOwnerAddress})
+    console.log("Estimated gas", estimatedGas)
+    return deployTransaction.send({gas: estimatedGas, from: ownerAddress})
 }
 
 const initializeBlockchainAccount = async (userBlockchainPassword) => {
@@ -53,12 +60,17 @@ const getAccount = (accountType) => {
 }
 
 const getMobilityContract = () => {
-    return deployedContract
+    return deployedMobilityContract
+}
+
+const getEuroTokenContract = () => {
+    return deployedErcEuroToken
 }
 
 module.exports = {
     initializeSmartContract,
     getMobilityContract,
+    getEuroTokenContract,
     getAccount,
     unlockBlockchainAccount
 }
