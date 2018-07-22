@@ -6,7 +6,7 @@
 |-|-|
 |Team name|MobiPay - Pay as you go|
 |Team lead | [Rafal Hofman](https://github.com/RafalBDS)|
-|Team members| [Rafal Hofman](https://github.com/RafalBDS), [Dariusz Kowalczyk](https://github.com/dariusz3), [Gabriel Zink](https://github.com/gzink), [Jakob Niggel](https://github.com/Jnig), [Martin Berger](https://github.com/drmartinberger)|
+|Team members| [Rafal Hofman](https://github.com/RafalBDS), [Dariusz Kowalczyk], [Gabriel Zink](https://github.com/gzink), [Jakob Niggel](https://github.com/Jnig), [Martin Berger](https://github.com/drmartinberger)|
 |Platform | Ethereum |
 |Development tools |Visual Studio Code, Atom, Git, Docker, Webstore, etc... |
 |SDKs|[Flutter](https://flutter.io/), [Parity](https://github.com/paritytech/parity-ethereum)|
