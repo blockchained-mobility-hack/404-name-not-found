@@ -148,6 +148,29 @@ app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, asy
     if (!req.body) return res.sendStatus(400)
 })
 
+app.post('/api/mobility-platform/mobile/start-service-usage', jsonParser, async (req, res) => {
+    const offerId = req.body.offerId
+    const serviceUsageStartTime = moment(req.body.serviceUsageStartTime).unix()
+
+    const user = blockchain.getAccount("user")
+
+    await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+    const transactionToBeSend = blockchain.getMobilityContract().methods.startServiceUsage(offerId, serviceUsageStartTime)
+    const gasEstimation = transactionToBeSend.estimateGas()
+    const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: user.blockchainAddress})
+    const committedTransactionEvent = committedTransaction.events.ServiceUsageStarted
+
+    const response = JSON.stringify(
+        {
+            offerId: committedTransactionEvent.returnValues.offerId,
+            serviceUsageStartTime: committedTransactionEvent.returnValues.serviceUsageStartTime,
+            hashv: committedTransactionEvent.returnValues.hashV
+        })
+    res.setHeader('Content-Type', 'application/json')
+    res.send(response)
+    if (!req.body) return res.sendStatus(400)
+})
+
 app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParser, (req, res) => {
     const offerId = req.body.offerId
     const timeFinished = Date.parse(req.body.timeFinished)
