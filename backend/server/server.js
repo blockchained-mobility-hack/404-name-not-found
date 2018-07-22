@@ -1,43 +1,39 @@
 'use strict'
 
-const Web3 = require('web3');
+const SocketServer = require('ws').Server
 
-const WebSocket = require('ws');
-
-
-const contractData = require('../build/contracts/MobilityPlatform.json')
-
-const Promise = require('bluebird')
-// custom logger
-const log = require('./logger.js')
 const express = require('express')
+
+const blockchain = require('../blockchain/api')
+
+const moment = require("moment")
+
+blockchain.initializeSmartContract().then(() => console.log("Blockchain contracts and accounts initalized"))
 
 const app = express()
 
 app.use(require('helmet')()) // use helmet
 app.use(require('cors')()) // enable CORS
-// serves all static files in /public
-app.use(express.static(`${__dirname}/../public`))
 const port = process.env.PORT || 8000
 const server = require('http').Server(app)
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new SocketServer({server: server})
 
 // boilerplate version
 const version = `Express-Boilerplate v${require('../package.json').version}`
 
 // start server
 server.listen(port, async () => {
-    log.info(version)
-    log.info(`Listening on port ${port}`)
-    await inializeWeb3()
-    await initializeMobilityContract()
-    await initializeUserAccount()
-    await initalizeServiceAccount()
+    console.info(version)
+    console.info(`Listening on port ${port}`)
 })
 
+let websocket
 wss.on('connection', function connection(ws) {
-    ws.send('connected')
+    websocket = ws
+    const message = "Connection established"
+    console.log(message)
+    ws.send(message + new Date())
 })
 
 // 'body-parser' middleware for POST
@@ -49,125 +45,241 @@ const urlencodedParser = bodyParser.urlencoded({
     extended: false
 })
 
-const rpcUrl = "http://localhost:8545/"
-
-let deployedContract, web3, contractOwnerAddress, contractOwnerPassword = "owner"
-
-let userBlockchainAddress, userBlockchainPassword = "userPassword" // TODO - add identity management?
-
-let serviceBlockchainAddress, serviceBlockchainPassword = "servicePassword"
-
-const inializeWeb3 = async () => {
-    web3 = new (Web3)(rpcUrl)
+const statusMapping = {
+    0: 'OfferProposed',
+    1: 'OfferAccepted',
+    2: 'OfferDeclined',
+    3: 'UsageStarted',
+    4: 'UsageEnded',
+    5: 'Paid'
 }
 
-const initializeMobilityContract = async () => {
-    const rpcUrl = "http://localhost:8545/"
-    contractOwnerAddress = await web3.eth.personal.newAccount(contractOwnerPassword)
-    await web3.eth.personal.unlockAccount(contractOwnerAddress, contractOwnerPassword)
-    const testContract = new web3.eth.Contract(contractData.abi)
-    const deployTransaction = testContract.deploy({data: contractData.bytecode, arguments: []})
-    const estimatedGas = await deployTransaction.estimateGas()
-    deployedContract = await deployTransaction.send({gas: estimatedGas, from: contractOwnerAddress})
-}
+app.get('/api/mobility-platform/usage-record/:offerId', jsonParser, async (req, res) => {
+    try {
+        if (!req.params) return res.sendStatus(400)
 
-const initializeUserAccount = async () => {
-    userBlockchainAddress = await web3.eth.personal.newAccount(userBlockchainPassword)
-}
-
-const initalizeServiceAccount = async () => {
-    serviceBlockchainAddress = await web3.eth.personal.newAccount(serviceBlockchainPassword)
-}
-
-// POST /login gets urlencoded bodies
-app.post('/login', urlencodedParser, (req, res) => {
-    if (!req.body) return res.sendStatus(400)
-    res.send(`welcome, ${req.body.username}`)
-})
-
-// POST /api/users gets JSON bodies
-app.post('/api/users', jsonParser, (req, res) => {
-    if (!req.body) return res.sendStatus(400)
-    // create user in req.body
+        const offerId = req.params.offerId
+        const user = blockchain.getAccount("user")
+        const transactionToBeSend = blockchain.getMobilityContract().methods.getUsageRecord(offerId)
+        const data = await transactionToBeSend.call({from: user.blockchainAddress})
+        const response = JSON.stringify({
+            offerId: data[0],
+            provider: data[1],
+            user: data[2],
+            offerValidUntil: data[3],
+            serviceUsageStartTime: data[4],
+            serviceUsageEndTime: data[5],
+            distanceTravelled: data[6],
+            pricePerKm: data[7],
+            totalPrice: data[8],
+            status: statusMapping[data[9]],
+            hashv: data[10]
+        })
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
 app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, async (req, res) => {
-    const offerId = req.body.offerId
-    const timeStarted = Date.parse(req.body.timeStarted)
-    const proposedPricePerKilometer = req.body.proposedPrice
-    const numberOfKilometers = req.body.numberOfKilometers
+    try {
+        if (!req.body) return res.sendStatus(400)
 
-    console.log(offerId, timeStarted, proposedPricePerKilometer, numberOfKilometers, serviceBlockchainAddress) // DEBUG purposes
+        const offerId = req.body.offerId
+        const offerValidUntil = moment(req.body.offerValidUntil).unix()
+        const pricePerKm = req.body.pricePerKm
 
+        const service = blockchain.getAccount("service")
+        const user = blockchain.getAccount("user")
+        await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+        const transactionToBeSend = blockchain.getMobilityContract().
+            methods.
+            proposeServiceUsage(offerId, offerValidUntil,
+                pricePerKm, user.blockchainAddress)
+        const gasEstimation = transactionToBeSend.estimateGas()
+        const committedTransaction = await transactionToBeSend.send(
+            {gas: (gasEstimation * 2), from: service.blockchainAddress})
+        const committedTransactionEvent = committedTransaction.events.ServiceUsageProposed
 
-    await web3.eth.personal.unlockAccount(serviceBlockchainAddress, serviceBlockchainPassword)
-    const transactionToBeSend = deployedContract.methods.proposeServiceUsage(offerId,timeStarted,proposedPricePerKilometer,numberOfKilometers);
-    const gasEstimation = transactionToBeSend.estimateGas()
-    const commitedTransaction = await transactionToBeSend.send()
-    const commitedTransactionEvent = commitedTransaction.event
-    ws.send(event)
+        if (!committedTransactionEvent) {
+            res.sendStatus(422)
+        }
 
-    res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify({event}))
-    if (!req.body) return res.sendStatus(400)
+        const response = JSON.stringify(
+            {
+                offerId: committedTransactionEvent.returnValues.offerId,
+                provider: committedTransactionEvent.returnValues.provider,
+                pricePerKm: committedTransactionEvent.returnValues.pricePerKm,
+                validUntil: committedTransactionEvent.returnValues.validUntil,
+                hashv: committedTransactionEvent.returnValues.hashV
+            })
+        if (websocket) {
+            websocket.send(response)
+        }
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
-app.post('/api/mobile-app/mobility-platform/mobile/accept-service', jsonParser, (req, res) => {
-    const offerId = req.body.offerId
+app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, async (req, res) => {
+    try {
+        if (!req.body) return res.sendStatus(400)
 
-    const userBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+        const offerId = req.body.offerId
 
-    console.log(offerId, userBlockchainAddress) // TODO EXECUTE TRANSACTION acceptService AND RETURN EVENT TO APP
-    const event = "ServiceAccepted"
-    res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify({event}))
-    if (!req.body) return res.sendStatus(400)
-    // create user in req.body
+        const user = blockchain.getAccount("user")
+
+        await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+        const transactionToBeSend = blockchain.getMobilityContract().methods.acceptProposedOffer(offerId)
+        const gasEstimation = transactionToBeSend.estimateGas()
+        const committedTransaction = await transactionToBeSend.send(
+            {gas: gasEstimation * 2, from: user.blockchainAddress})
+        const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalAccepted
+
+        if (!committedTransactionEvent) {
+            res.sendStatus(422)
+        }
+
+        const response = JSON.stringify(
+            {
+                offerId: committedTransactionEvent.returnValues.offerId
+            })
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
-app.post('/api/mobility-platform/service-provider/finishServiceUsage', jsonParser, (req, res) => {
-    const offerId = req.body.offerId
-    const timeFinished = Date.parse(req.body.timeFinished)
-    const numberOfKilometersTraveled = req.body.numberOfKilometersPassed
+app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, async (req, res) => {
+    try {
+        if (!req.body) return res.sendStatus(400)
 
-    const serviceBlockchainAddress = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" // This will be fixed, demo value
+        const offerId = req.body.offerId
 
-    console.log(offerId, timeFinished, numberOfKilometersTraveled, serviceBlockchainAddress) // TODO EXECUTE TRANSACTION finishServiceUsage
-    const event = "ServiceFinished"
-    res.setHeader('Content-Type', 'application/json')
-    res.send(JSON.stringify({event}))
-    // TODO when event is returned, publish topic on web sockets for APP
-    if (!req.body) return res.sendStatus(400)
+        const user = blockchain.getAccount("user")
+
+        await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+        const transactionToBeSend = blockchain.getMobilityContract().methods.declineProposedOffer(offerId)
+        const gasEstimation = transactionToBeSend.estimateGas()
+        const committedTransaction = await transactionToBeSend.send(
+            {gas: gasEstimation * 2, from: user.blockchainAddress})
+        const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalDeclined
+
+        if (!committedTransactionEvent) {
+            res.sendStatus(422)
+        }
+
+        const response = JSON.stringify(
+            {
+                offerId: committedTransactionEvent.returnValues.offerId
+            })
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
-// ex. using 'node-fetch' to call JSON REST API
-/*
-const fetch = require('node-fetch');
-// for all options see https://github.com/bitinn/node-fetch#options
-const url = 'https://api.github.com/users/cktang88/repos';
-const options = {
-  method: 'GET',
-  headers: {
-    // spoof user-agent
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-  }
-};
+app.post('/api/mobility-platform/service-provider/start-service-usage', jsonParser, async (req, res) => {
+    try {
+        if (!req.body) return res.sendStatus(400)
 
-fetch(url, options)
-  .then(res => {
-    // meta
-    console.log(res.ok);
-    console.log(res.status);
-    console.log(res.statusText);
-    console.log(res.headers.raw());
-    console.log(res.headers.get('content-type'));
-    return res.json();
-  })
-  .then(json => {
-    console.log(`User has ${json.length} repos`);
-  })
-  .catch(err => {
-    // API call failed...
-    log.error(err);
-  });
-*/
+        const offerId = req.body.offerId
+        const serviceUsageStartTime = moment(req.body.serviceUsageStartTime).unix()
+
+        const service = blockchain.getAccount("service")
+
+        await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+        const transactionToBeSend = blockchain.getMobilityContract().
+            methods.
+            startServiceUsage(offerId, serviceUsageStartTime)
+        const gasEstimation = transactionToBeSend.estimateGas()
+        const committedTransaction = await transactionToBeSend.send(
+            {gas: gasEstimation * 2, from: service.blockchainAddress})
+        const committedTransactionEvent = committedTransaction.events.ServiceUsageStarted
+
+        if (!committedTransactionEvent) {
+            res.sendStatus(422)
+        }
+
+        if (websocket) {
+            websocket.send(response)
+        }
+        const response = JSON.stringify(
+            {
+                offerId: committedTransactionEvent.returnValues.offerId,
+                serviceUsageStartTime: committedTransactionEvent.returnValues.serviceUsageStartTime,
+                hashv: committedTransactionEvent.returnValues.hashV
+            })
+        res.setHeader('Content-Type', 'application/json')
+        res.send(response)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonParser, async (req, res) => {
+    try {
+        if (!req.body) return res.sendStatus(400)
+
+        const offerId = req.body.offerId
+        const serviceUsageEndTime = moment(req.body.serviceUsageEndTime).unix()
+        const distanceTravelled = req.body.distanceTravelled
+
+        const service = blockchain.getAccount("service")
+        const user = blockchain.getAccount("user")
+
+        await blockchain.unlockBlockchainAccount(service.blockchainAddress, service.blockchainPassword)
+        const transactionToBeSend = blockchain.getMobilityContract().
+            methods.
+            finishServiceUsage(offerId, serviceUsageEndTime, distanceTravelled)
+        const gasEstimation = transactionToBeSend.estimateGas()
+        const committedTransaction = await transactionToBeSend.send(
+            {gas: (gasEstimation * 2), from: service.blockchainAddress})
+        const serviceUsageEndedEvent = committedTransaction.events.ServiceUsageEnded
+        const paymentEvent = committedTransaction.events.ServiceUsagePayedUp
+
+        if (!serviceUsageEndedEvent) {
+            res.sendStatus(422)
+        }
+
+        const response =
+            {
+                offerId: serviceUsageEndedEvent.returnValues.offerId,
+                serviceUsageEndTime: serviceUsageEndedEvent.returnValues.serviceUsageEndTime,
+                distanceTravelled: serviceUsageEndedEvent.returnValues.distanceTravelled,
+                totalPrice: serviceUsageEndedEvent.returnValues.validUntil,
+                hashv: serviceUsageEndedEvent.returnValues.hashV
+
+            }
+
+        res.setHeader('Content-Type', 'application/json')
+        const paymentSucceced = Boolean(paymentEvent)
+
+        if (websocket) {
+            const webSocketResponse = Object.assign({}, {paymentSucceced}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
+        }
+
+        paymentSucceced ? res.status(200).send(JSON.stringify(response)) : res.status(422).
+            send(JSON.stringify(response))
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})

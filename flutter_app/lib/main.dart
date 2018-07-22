@@ -7,8 +7,25 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong/latlong.dart';
 
+import 'secrets.dart' as secrets;
+
 part 'home.dart';
 part 'splash.dart';
+
+var accessToken = '';
+
+getAccessTokenAmadeus() async {
+  var response = await http.post(
+    'https://test.api.amadeus.com/v1/security/oauth2/token',
+    body: {
+        "grant_type": "client_credentials",
+        "client_id": secrets.amadeusClientId,
+        "client_secret": secrets.amadeusSecret,
+      }
+  );
+  accessToken = json.decode(response.body)['access_token'];
+  print(accessToken);
+}
 
 Future<http.Response> callAmadeus(path, params) async {
   Uri apiUrl = new Uri(
@@ -17,9 +34,11 @@ Future<http.Response> callAmadeus(path, params) async {
       path: path,
       queryParameters: params);
 
+  print(apiUrl);
+
   return await http.get(
     apiUrl,
-    headers: {HttpHeaders.AUTHORIZATION: "Bearer xx"},
+    headers: {HttpHeaders.AUTHORIZATION: "Bearer " + accessToken},
   );
 }
 
@@ -35,18 +54,19 @@ class AirportResult {
 }
 
 Future<double> getFlightPrice(String origin, String destination) async {
-  final response = await callAmadeus('v1/reference-data/locations/airports', {
+  final response = await callAmadeus('v1/shopping/flight-offers', {
     "origin": origin,
     "destination": destination,
     "departureDate": "2018-08-15",
   });
 
+  print(response.body);
   var decoded = json.decode(response.body);
 
-  var offer = decoded['data']['offerItems'][0];
+  var offer = decoded['data'][0]['offerItems'][0];
   var price = offer['price']['total'];
 
-  return price;
+  return double.parse(price);
 }
 
 Future<AirportResult> fetchAirport(double latitude, double longitude) async {
@@ -56,6 +76,7 @@ Future<AirportResult> fetchAirport(double latitude, double longitude) async {
     "sort": "relevance",
   });
 
+  print(response.statusCode);
   if (response.statusCode == 200) {
     var decoded = json.decode(response.body);
     var result = decoded['data'][0];
@@ -75,7 +96,7 @@ Future<List<Result>> getResults(
     latitudeStart, longitudeStart, latitudeEnd, longitudeEnd) async {
   final airport1 = await fetchAirport(latitudeStart, longitudeStart);
   final airport2 = await fetchAirport(latitudeEnd, longitudeEnd);
-  
+
   var flightPrice = await getFlightPrice(airport1.code, airport2.code);
 
   List<Result> res = [];
@@ -83,21 +104,23 @@ Future<List<Result>> getResults(
   Result start = new Result(
     distanceSoFar: 0,
     distance: airport1.distance,
-    title: 'Carsharing zum Flughafen ' + airport1.name,
+    title: 'Carsharing to the airport ' + airport1.name,
     price: 0.36 * airport1.distance,
     type: TravelType.carsharing,
   );
 
   final Distance distance = new Distance();
   var distanceFlight = (distance(
-    new LatLng(airport1.latitude, airport1.longitude),
-    new LatLng(airport2.latitude, airport2.longitude),
-  ) ~/ 1000).toInt();
+            new LatLng(airport1.latitude, airport1.longitude),
+            new LatLng(airport2.latitude, airport2.longitude),
+          ) ~/
+          1000)
+      .toInt();
 
   Result flight = new Result(
     distanceSoFar: airport1.distance,
     distance: distanceFlight,
-    title: 'Flug',
+    title: 'Flight',
     price: flightPrice,
     type: TravelType.plane,
   );
@@ -105,7 +128,7 @@ Future<List<Result>> getResults(
   Result end = new Result(
     distanceSoFar: start.distance + flight.distance,
     distance: airport2.distance,
-    title: 'Carsharing vom Flughafen ' + airport2.name,
+    title: 'Carsharing from the airport ' + airport2.name,
     price: 0.36 * airport2.distance,
     type: TravelType.carsharing,
   );
@@ -130,8 +153,7 @@ class Result {
       {this.type, this.distanceSoFar, this.distance, this.title, this.price});
 }
 
-const kGoogleApiKey = "AIzaSyA0TtT66-MIIYTqFBadycf-DfNd-J9lXe0";
-GoogleMapsPlaces _places = new GoogleMapsPlaces(kGoogleApiKey);
+GoogleMapsPlaces _places = new GoogleMapsPlaces(secrets.googlePlacesApi);
 
 final homeScaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -142,13 +164,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MobiPay',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: new SplashScreen(),
       routes: <String, WidgetBuilder>{
-       '/home': (BuildContext context) => new MyHomePage(title: 'Flutter Demo hHome Page')
+       '/home': (BuildContext context) => new MyHomePage(title: 'MobiPay')
       },
     );
   }
@@ -161,16 +183,4 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() => new _MyHomePageState();
-}
-
-Future<Null> displayPrediction(Prediction p, ScaffoldState scaffold) async {
-  if (p != null) {
-    // get detail (lat/lng)
-    PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
-    final lat = detail.result.geometry.location.lat;
-    final lng = detail.result.geometry.location.lng;
-
-    scaffold.showSnackBar(
-        new SnackBar(content: new Text("${p.description} - $lat/$lng")));
-  }
 }
