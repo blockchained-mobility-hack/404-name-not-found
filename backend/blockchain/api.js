@@ -17,6 +17,7 @@ async function initializeSmartContract() {
     contractOwnerAddress = await initializeBlockchainAccount(contractOwnerPassword)
     await unlockBlockchainAccount(contractOwnerAddress, contractOwnerPassword)
     deployedContract = await initializeContract(contractData.abi, contractData.bytecode, contractOwnerAddress, contractOwnerPassword)
+    console.log("Contract address", deployedContract._address)
     userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     serviceBlockchainAddress = await initializeBlockchainAccount(serviceBlockchainPassword)
 }
