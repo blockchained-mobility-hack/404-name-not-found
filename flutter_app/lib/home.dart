@@ -91,26 +91,52 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: new Text('Accept'),
                   onPressed: () {
                     acceptOffer(params['offerId']);
+                    Navigator.pop(context);
                   },
                 ),
                 new FlatButton(
                   child: new Text('Decline'),
                   onPressed: () {
                     declineOffer(params['offerId']);
+                    Navigator.pop(context);
                   },
                 )
               ]));
     }
 
-    var channel = IOWebSocketChannel.connect("ws://172.27.65.253:8000");
+    showStartDialog(params) {
+      showDialog(
+          context: context,
+          child: new AlertDialog(
+              title: new Text("Offer"),
+              content: new Text(
+                  "You started your journey"),
+          ));
+    }
+
+    showFinishDialog(params) {
+      showDialog(
+          context: context,
+          child: new AlertDialog(
+              title: new Text("Offer"),
+              content: new Text(
+                  "You finished your journey"),
+          ));
+    }
+
+    var channel = IOWebSocketChannel.connect("ws://172.27.64.179:8000");
 
     channel.stream.listen((message) {
       // offerId, provider, pricePerKm, validUntil, hasv
-      print(message);
       if (message != null) {
         var decoded = json.decode(message);
-        print(decoded);
-        showAcceptDialog({"pricePerKm": decoded['pricePerKm'], "offerId": decoded['offerId'] });
+        if (message['type'] == 'proposal') {
+          showAcceptDialog({
+            "pricePerKm": decoded['pricePerKm'],
+            "offerId": decoded['offerId']
+          });
+        } else if (message['type'] == 'started') {
+        } else if (message['type'] == 'finished') {}
       }
     });
 
