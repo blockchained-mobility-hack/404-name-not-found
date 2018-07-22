@@ -1,12 +1,13 @@
-# 404-name-not-found
+# MobiPay - Pay as you go
 
 ## Team info for project submission
 
 |Key|Value|
 |-|-|
+|Team name|MobiPay - Pay as you go|
 |Team lead | [Rafal Hofman](https://github.com/RafalBDS)|
 |Platform | Ethereum |
 |Development tools |Visual Studio Code, Atom, Git, Docker, Webstore, etc... |
-|SDKs|[Flutter](https://flutter.io/), Parity|
+|SDKs|[Flutter](https://flutter.io/), [Parity](https://github.com/paritytech/parity-ethereum)|
 |APIs|[Amadeus](https://test.api.amadeus.com), [Google Place Autocomplete](https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete)|
-|Libaries|[Mobile app](https://github.com/blockchained-mobility-hack/404-name-not-found/blob/master/flutter_app/pubspec.yaml), [Backend](https://github.com/blockchained-mobility-hack/404-name-not-found/blob/master/backend/package.json), [ERC20 Token](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20)|
+|Libraries|[Mobile app](https://github.com/blockchained-mobility-hack/404-name-not-found/blob/master/flutter_app/pubspec.yaml), [Backend](https://github.com/blockchained-mobility-hack/404-name-not-found/blob/master/backend/package.json), [ERC20 Token Code adapted from OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-solidity/tree/master/contracts/token/ERC20)|
