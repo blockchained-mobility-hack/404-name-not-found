@@ -43,9 +43,13 @@ contract MobilityPlatform {
         emit ServiceUsageProposed(offerId, provider, pricePerKm, offerValidUntil, usageRecords[offerId].hashv);
     }
     
+    event OfferAcceptedForYou(uint offerid, address user, address acceptingaddress, address provider);
     function acceptProposedOffer(uint offerId) public {
         if (usageRecords[offerId].status != Status.OfferProposed) revert();
-        if (usageRecords[offerId].user == msg.sender) revert();
+        if (usageRecords[offerId].user != msg.sender) {
+            emit OfferAcceptedForYou(offerId, usageRecords[offerId].user, msg.sender, usageRecords[offerId].provider );
+//            revert();
+        }
         
         usageRecords[offerId].status = Status.OfferAccepted;
     
@@ -54,7 +58,7 @@ contract MobilityPlatform {
 
     function declineProposedOffer(uint offerId) public {
         if (usageRecords[offerId].status != Status.OfferProposed) revert();
-        if (usageRecords[offerId].user == msg.sender) revert();
+//        if (usageRecords[offerId].user != msg.sender) revert();
         
         usageRecords[offerId].status = Status.OfferDeclined;
     
@@ -63,7 +67,7 @@ contract MobilityPlatform {
 
     function startServiceUsage(uint offerId, uint serviceUsageStartTime) public {
         if (usageRecords[offerId].status != Status.OfferAccepted) revert();
-        if (usageRecords[offerId].provider == msg.sender) revert();
+//        if (usageRecords[offerId].provider != msg.sender) revert();
         
         usageRecords[offerId].status = Status.UsageStarted;
         usageRecords[offerId].serviceUsageStartTime = serviceUsageStartTime;
@@ -74,7 +78,7 @@ contract MobilityPlatform {
 
     function finishServiceUsage(uint offerId, uint serviceUsageEndTime, uint distanceTravelled) public {
         if (usageRecords[offerId].status != Status.UsageStarted) revert();
-        if (usageRecords[offerId].provider == msg.sender) revert();
+//        if (usageRecords[offerId].provider != msg.sender) revert();
    
         usageRecords[offerId].status = Status.UsageEnded;
         usageRecords[offerId].serviceUsageEndTime = serviceUsageEndTime;
@@ -90,7 +94,7 @@ contract MobilityPlatform {
 
     function executePayment(uint offerId) public {
         if (usageRecords[offerId].status != Status.UsageEnded) revert();
-        if (usageRecords[offerId].provider == msg.sender || usageRecords[offerId].user == msg.sender) revert();
+//        if (usageRecords[offerId].provider != msg.sender && usageRecords[offerId].user != msg.sender) revert();
         
         uint price = usageRecords[offerId].totalPrice;
         if (userAccountBalance[usageRecords[offerId].user] < price) {
