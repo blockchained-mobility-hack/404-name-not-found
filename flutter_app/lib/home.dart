@@ -130,13 +130,17 @@ class _MyHomePageState extends State<MyHomePage> {
       // offerId, provider, pricePerKm, validUntil, hasv
       if (message != null) {
         var decoded = json.decode(message);
-        if (message['type'] == 'proposal') {
+        print(decoded);
+        if (decoded['type'] == 'proposal') {
           showAcceptDialog({
             "pricePerKm": decoded['pricePerKm'],
             "offerId": decoded['offerId']
           });
-        } else if (message['type'] == 'started') {
-        } else if (message['type'] == 'finished') {}
+        } else if (decoded['type'] == 'started') {
+          showStartDialog({"offerId": decoded['offerId']});
+        } else if (decoded['type'] == 'finished') {
+          showFinishDialog({"offerId": decoded['offerId']});
+        }
       }
     });
 
