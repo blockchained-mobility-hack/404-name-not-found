@@ -6,7 +6,11 @@ contract MobilityPlatform {
 
     enum Status { OfferProposed, OfferAccepted, OfferDeclined, UsageStarted, UsageEnded, Paid }
 
-    constructor() public {}
+    ERC20 balanceBook;
+
+    constructor(ERC20 token) public {
+        balanceBook = token;
+    }
 
     struct UsageRecord {
         uint offerId;
@@ -34,13 +38,12 @@ contract MobilityPlatform {
 
     function proposeServiceUsage(uint offerId, uint offerValidUntil, uint pricePerKm, address user) public {
         address provider = msg.sender;
-        usageRecords[offerId] = UsageRecord(offerId, provider, user, offerValidUntil, 0, 0, pricePerKm, 0, 0, Status.OfferProposed, "");
+        usageRecords[offerId] = UsageRecord(offerId, provider, user, offerValidUntil, 0, 0, 0, pricePerKm, 0, Status.OfferProposed, "");
 //        usageRecords[offerId].hashv = keccak256(usageRecords[offerId]));
 
         emit ServiceUsageProposed(offerId, provider, pricePerKm, offerValidUntil, usageRecords[offerId].hashv);
     }
 
-    // backend has to call approve(address MobilityPlatformAddress, uint256 MaxAllowedAmountToBeSpend)
     function acceptProposedOffer(uint offerId) public {
         Status expectedStatus = Status.OfferProposed;
         address checkedAddress = usageRecords[offerId].user;
@@ -109,9 +112,11 @@ contract MobilityPlatform {
         uint totalPrice = usageRecords[offerId].distanceTravelled * usageRecords[offerId].pricePerKm;
         usageRecords[offerId].totalPrice = totalPrice;
         emit ServiceUsageEnded(offerId, serviceUsageEndTime, distanceTravelled, totalPrice, usageRecords[offerId].hashv);
+
+        executePayment(offerId);
     }
 
-    function executePayment(ERC20 balanceBook, uint offerId) public {
+    function executePayment(uint offerId) public {
         Status expectedStatus = Status.UsageEnded;
         address checkedAddress = usageRecords[offerId].provider;
         if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) {
@@ -135,6 +140,7 @@ contract MobilityPlatform {
 
         delete usageRecords[offerId];
     }
+
 
  /*
     modifier verifyCall(uint offerId, address checkedAddr, Status expectedStatus) {
