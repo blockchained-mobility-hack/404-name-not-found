@@ -45,6 +45,19 @@ const urlencodedParser = bodyParser.urlencoded({
     extended: false
 })
 
+app.post('/api/mobility-platform/usage-record', jsonParser, async (req, res) => {
+    const offerId = req.body.offerId
+    console.log(offerId)
+
+    const user = blockchain.getAccount("user")
+    const transactionToBeSend = blockchain.getMobilityContract().methods.getUsageRecord(offerId)
+    const data = await transactionToBeSend.call({from: user.blockchainAddress})
+    const response = JSON.stringify({data})
+    res.setHeader('Content-Type', 'application/json')
+    res.send(response)
+    if (!req.body) return res.sendStatus(400)
+})
+
 app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonParser, async (req, res) => {
     const offerId = req.body.offerId
     const offerValidUntil = moment(req.body.offerValidUntil).unix()
@@ -56,16 +69,17 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
     const transactionToBeSend = blockchain.getMobilityContract().methods.proposeServiceUsage(offerId, offerValidUntil,
         pricePerKm, user.blockchainAddress)
     const gasEstimation = transactionToBeSend.estimateGas()
-    const commitedTransaction = await transactionToBeSend.send({gas: (gasEstimation * 2), from: service.blockchainAddress})
-    const commitedTransactionEvent = commitedTransaction.events.ServiceUsageProposed
+    const committedTransaction = await transactionToBeSend.send(
+        {gas: (gasEstimation * 2), from: service.blockchainAddress})
+    const committedTransactionEvent = committedTransaction.events.ServiceUsageProposed
 
     const response = JSON.stringify(
         {
-            offerId: commitedTransactionEvent.returnValues.offerId,
-            provider: commitedTransactionEvent.returnValues.provider,
-            pricePerKm: commitedTransactionEvent.returnValues.pricePerKm,
-            validUntil: commitedTransactionEvent.returnValues.validUntil,
-            hashv: commitedTransactionEvent.returnValues.hashV
+            offerId: committedTransactionEvent.returnValues.offerId,
+            provider: committedTransactionEvent.returnValues.provider,
+            pricePerKm: committedTransactionEvent.returnValues.pricePerKm,
+            validUntil: committedTransactionEvent.returnValues.validUntil,
+            hashv: committedTransactionEvent.returnValues.hashV
         })
     if (websocket) {
         websocket.send(response)
@@ -75,20 +89,21 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
     if (!req.body) return res.sendStatus(400)
 })
 
-app.post('/api/mobile-app/mobility-platform/mobile/accept-service', jsonParser, async (req, res) => {
+app.post('/api/mobility-platform/mobile/accept-service', jsonParser, async (req, res) => {
     const offerId = req.body.offerId
 
-    await blockchain.unlockBlockchainAccount(blockchain.userBlockchainAddress, blockchain.userBlockchainPassword)
-    const transactionToBeSend = blockchain.deployedContract.methods.acceptService()
+    const user = blockchain.getAccount("user")
+
+    await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+    const transactionToBeSend = blockchain.getMobilityContract().methods.acceptProposedOffer(offerId)
     const gasEstimation = transactionToBeSend.estimateGas()
-    const commitedTransaction = await transactionToBeSend.send()
-    const commitedTransactionEvent = commitedTransaction.event
+    const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: user.blockchainAddress})
+    const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalAccepted
 
     const response = JSON.stringify(
         {
-            offerId: commitedTransactionEvent
+            offerId: committedTransactionEvent.returnValues.offerId
         })
-    websocket.send(response)
     res.setHeader('Content-Type', 'application/json')
     res.send(response)
     if (!req.body) return res.sendStatus(400)
