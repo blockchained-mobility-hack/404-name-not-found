@@ -1,6 +1,5 @@
 part of 'main.dart';
 
-
 class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
   var results;
@@ -75,6 +74,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     getAccessTokenAmadeus();
+
+    var channel = IOWebSocketChannel.connect("ws://localhost:8080");
+
+    channel.stream.listen((message) {
+      print(message);
+    });
   }
 
   @override
