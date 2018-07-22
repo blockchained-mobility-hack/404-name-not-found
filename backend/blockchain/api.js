@@ -15,11 +15,11 @@ let serviceBlockchainAddress, serviceBlockchainPassword = "servicePassword"
 async function initializeSmartContract() {
     await inializeWeb3()
     contractOwnerAddress = await initializeBlockchainAccount(contractOwnerPassword)
-    await unlockBlockchainAccount(contractOwnerAddress, contractOwnerPassword)
-    deployedContract = await initializeContract(contractData.abi, contractData.bytecode, contractOwnerAddress, contractOwnerPassword)
-    console.log("Contract address", deployedContract._address)
     userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     serviceBlockchainAddress = await initializeBlockchainAccount(serviceBlockchainPassword)
+    await unlockBlockchainAccount(contractOwnerAddress, contractOwnerPassword)
+    deployedContract = await initializeContract(contractData.abi, contractData.bytecode, contractOwnerAddress, contractOwnerPassword, userBlockchainAddress)
+    console.log("Contract address", deployedContract._address)
 }
 
 const inializeWeb3 = async () => {
@@ -29,9 +29,9 @@ const inializeWeb3 = async () => {
     }
 }
 
-const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword) => {
+const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword, userAccountToLoad) => {
     const contractInterface = new web3.eth.Contract(abi)
-    const deployTransaction = contractInterface.deploy({data: bytecode, arguments: []})
+    const deployTransaction = contractInterface.deploy({data: bytecode, arguments: [userAccountToLoad]})
     const estimatedGas = await deployTransaction.estimateGas()
     return deployTransaction.send({gas: estimatedGas, from: contractOwnerAddress})
 }

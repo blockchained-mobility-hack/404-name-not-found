@@ -83,8 +83,30 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
+    showAcceptDialog() {
+      showDialog(context: context, child:
+        new AlertDialog(
+          title: new Text("Offer"),
+          content: new Text("You will be billed by 22€ for taking the car"),
+          actions: <Widget>[
+                    new FlatButton(
+                      child: new Text('Accept'),
+                      onPressed: () {
+                      },
+                    ),
+                    new FlatButton(
+                      child: new Text('Decline'),
+                      onPressed: () {
+                      },
+                    )
+                  ]
+        )
+      );
+    }
+
     List<Step> my_steps = [
       new Step(
           title: new Text("Step 1"),
@@ -106,7 +128,13 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 children: [ 
                   Icon(Icons.directions_car),
-                  new Text("Route has been calculated. Please go to the car")
+                  new Text("Route has been calculated.\n Please go to the car"),
+                  FlatButton(
+                    onPressed: () {
+                      showAcceptDialog();
+                    },
+                    child: new Text("show")
+                  )
                 ]
               )
             ),
