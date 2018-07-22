@@ -79,6 +79,12 @@ class _MyHomePageState extends State<MyHomePage> {
     var channel = IOWebSocketChannel.connect("ws://localhost:8080");
 
     channel.stream.listen((message) {
+      showDialog(context: context, child:
+          new AlertDialog(
+            title: new Text("My Super title"),
+            content: new Text("Hello World"),
+          )
+      );
       print(message);
     });
   }
