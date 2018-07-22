@@ -8,7 +8,12 @@ const blockchain = require('../blockchain/api')
 
 const moment = require("moment")
 
-blockchain.initializeSmartContract().then(() => console.log("Blockchain contracts and accounts initalized"))
+blockchain.initializeSmartContract().
+    then(() => console.log("Blockchain contracts and accounts initalized")).
+    catch(err => {
+        console.log("Error during contracts initalization", err)
+        process.exit(1)
+    })
 
 const app = express()
 

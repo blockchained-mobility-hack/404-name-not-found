@@ -1,6 +1,5 @@
 part of 'main.dart';
 
-
 class _MyHomePageState extends State<MyHomePage> {
   int current_step = 0;
   var results;
@@ -66,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title:
               Text(result.title + " " + result.price.round().toString() + "€"),
         )));
+    tiles.add(new Image.asset('images/amadeus2.png'));
     return Column(
       children: tiles,
     );
@@ -75,6 +75,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     getAccessTokenAmadeus();
+
+    var channel = IOWebSocketChannel.connect("ws://localhost:8080");
+
+    channel.stream.listen((message) {
+      print(message);
+    });
   }
 
   @override
@@ -94,7 +100,18 @@ class _MyHomePageState extends State<MyHomePage> {
           isActive: true),
       new Step(
           title: new Text("Step 3"),
-          content: new Text("Hello World!"),
+          content: Column(children: [
+            new Padding(
+              padding: new EdgeInsets.all(8.0),
+              child: Row(
+                children: [ 
+                  Icon(Icons.directions_car),
+                  new Text("Route has been calculated. Please go to the car")
+                ]
+              )
+            ),
+            new Image.asset('images/map.png'),
+          ]),
           isActive: true),
     ];
 

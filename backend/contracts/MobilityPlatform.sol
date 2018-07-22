@@ -4,9 +4,10 @@ contract MobilityPlatform {
 
     enum Status { OfferProposed, OfferAccepted, OfferDeclined, UsageStarted, UsageEnded, Paid }
 
-    constructor() public {
-        userAccountBalance[0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe] = 2000; //Demo user account
+    constructor(address testUserAccount) public {
+        userAccountBalance[testUserAccount] = 2000; //Demo user account
     }
+
     struct UsageRecord {
         uint offerId;
         address provider;
@@ -145,6 +146,17 @@ contract MobilityPlatform {
         delete usageRecords[offerId];
     }
 
+
+ /*    
+    modifier verifyCall(uint offerId, address checkedAddr, Status expectedStatus) {
+        address checkedAddress = usageRecords[offerId].provider;
+        if (usageRecords[offerId].status != expectedStatus || checkedAddress != msg.sender) { 
+            emit ContractChangeRejected(offerId, checkedAddress, msg.sender, usageRecords[offerId].status, expectedStatus);
+            return;
+        }
+        _;
+    }
+*/
     event ServiceUsageProposed(uint offerId, address provider, uint pricePerKm, uint validUntil, string hashv);
     event ServiceUsageProposalAccepted(uint offerId);
     event ServiceUsageProposalDeclined(uint offerId);
