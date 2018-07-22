@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title:
               Text(result.title + " " + result.price.round().toString() + "€"),
         )));
+    tiles.add(new Image.asset('images/amadeus2.png'));
     return Column(
       children: tiles,
     );
@@ -99,7 +100,18 @@ class _MyHomePageState extends State<MyHomePage> {
           isActive: true),
       new Step(
           title: new Text("Step 3"),
-          content: new Text("Hello World!"),
+          content: Column(children: [
+            new Padding(
+              padding: new EdgeInsets.all(8.0),
+              child: Row(
+                children: [ 
+                  Icon(Icons.directions_car),
+                  new Text("Route has been calculated. Please go to the car")
+                ]
+              )
+            ),
+            new Image.asset('images/map.png'),
+          ]),
           isActive: true),
     ];
 
