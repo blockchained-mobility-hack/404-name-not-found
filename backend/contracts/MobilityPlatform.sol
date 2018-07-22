@@ -52,7 +52,7 @@ contract MobilityPlatform {
         emit ServiceUsageProposalAccepted(offerId);
     }
 
-    function declineService(uint offerId) public {
+    function declineProposedOffer(uint offerId) public {
         if (usageRecords[offerId].status != Status.OfferProposed) revert();
         if (usageRecords[offerId].user != msg.sender) revert();
         
