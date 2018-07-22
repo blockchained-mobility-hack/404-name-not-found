@@ -128,7 +128,7 @@ contract MobilityPlatform {
         usageRecords[offerId].status = Status.Paid;
 //        usageRecords[offerId].hashv = keccak256(usageRecords[offerId]);
 
-        emit ServiceUsagePayedUp(offerId, usageRecords[offerId].hashv);
+        emit ServiceUsagePayedUp(offerId, usageRecords[offerId].hashv, price);
 
         delete usageRecords[offerId];
     }
@@ -149,7 +149,7 @@ contract MobilityPlatform {
     event ServiceUsageProposalDeclined(uint offerId);
     event ServiceUsageStarted(uint offerId, uint serviceUsageStartTime, string hashv);
     event ServiceUsageEnded(uint offerId, uint serviceUsageEndTime, uint distanceTravelled, uint serviceCost, string hashv);
-    event ServiceUsagePayedUp(uint offerId, string hashv);
+    event ServiceUsagePayedUp(uint offerId, string hashv, uint totalPrice);
     event PaymentFailedDueToUnsufficientFunds(uint offerId);
 
     // warning events
