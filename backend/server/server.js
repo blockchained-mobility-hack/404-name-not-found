@@ -108,7 +108,7 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
     if (!req.body) return res.sendStatus(400)
 })
 
-app.post('/api/mobility-platform/mobile/accept-service', jsonParser, async (req, res) => {
+app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, async (req, res) => {
     const offerId = req.body.offerId
 
     const user = blockchain.getAccount("user")
@@ -118,6 +118,26 @@ app.post('/api/mobility-platform/mobile/accept-service', jsonParser, async (req,
     const gasEstimation = transactionToBeSend.estimateGas()
     const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: user.blockchainAddress})
     const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalAccepted
+
+    const response = JSON.stringify(
+        {
+            offerId: committedTransactionEvent.returnValues.offerId
+        })
+    res.setHeader('Content-Type', 'application/json')
+    res.send(response)
+    if (!req.body) return res.sendStatus(400)
+})
+
+app.post('/api/mobility-platform/mobile/decline-proposed-offer', jsonParser, async (req, res) => {
+    const offerId = req.body.offerId
+
+    const user = blockchain.getAccount("user")
+
+    await blockchain.unlockBlockchainAccount(user.blockchainAddress, user.blockchainPassword)
+    const transactionToBeSend = blockchain.getMobilityContract().methods.declineProposedOffer(offerId)
+    const gasEstimation = transactionToBeSend.estimateGas()
+    const committedTransaction = await transactionToBeSend.send({gas: gasEstimation * 2, from: user.blockchainAddress})
+    const committedTransactionEvent = committedTransaction.events.ServiceUsageProposalDeclined
 
     const response = JSON.stringify(
         {
