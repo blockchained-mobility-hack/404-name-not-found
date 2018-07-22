@@ -150,7 +150,8 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
                 hashv: committedTransactionEvent.returnValues.hashV
             })
         if (websocket) {
-            websocket.send(response)
+            const webSocketResponse = Object.assign({}, {type: "proposal"}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
         }
         res.setHeader('Content-Type', 'application/json')
         res.send(response)
@@ -164,8 +165,12 @@ app.post('/api/mobility-platform/service-provider/propose-service-usage', jsonPa
 app.post('/api/mobility-platform/mobile/accept-proposed-offer', jsonParser, async (req, res) => {
     try {
         if (!req.body) return res.sendStatus(400)
+        console.log(req.body)
+        console.log(req.body.offerId)
+        const offerId = parseFloat(req.body.offerId)
 
-        const offerId = req.body.offerId
+        console.log(offerId)
+
 
         const user = blockchain.getAccount("user")
 
@@ -247,15 +252,16 @@ app.post('/api/mobility-platform/service-provider/start-service-usage', jsonPars
             return res.sendStatus(422)
         }
 
-        if (websocket) {
-            websocket.send(response)
-        }
         const response = JSON.stringify(
             {
                 offerId: committedTransactionEvent.returnValues.offerId,
                 serviceUsageStartTime: committedTransactionEvent.returnValues.serviceUsageStartTime,
                 hashv: committedTransactionEvent.returnValues.hashV
             })
+        if (websocket) {
+            const webSocketResponse = Object.assign({}, {type: "started"}, response)
+            websocket.send(JSON.stringify(webSocketResponse))
+        }
         res.setHeader('Content-Type', 'application/json')
         res.send(response)
     }
@@ -328,7 +334,7 @@ app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonPar
         const paymentSucceced = Boolean(paymentEvent)
 
         if (websocket) {
-            const webSocketResponse = Object.assign({}, {paymentSucceced}, response)
+            const webSocketResponse = Object.assign({}, {type: "finished"}, {paymentSucceced}, response)
             websocket.send(JSON.stringify(webSocketResponse))
         }
 
