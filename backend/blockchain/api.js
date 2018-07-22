@@ -17,10 +17,12 @@ async function initializeSmartContract() {
     await inializeWeb3()
     userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     await unlockBlockchainAccount(userBlockchainAddress, userBlockchainPassword)
+
     deployedErcEuroToken = await initializeContract(euroErcContractData.abi, euroErcContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
     console.log("ERC20 Euro token contract", deployedErcEuroToken._address)
-    deployedMobilityContract = await initializeContract(mobilityContractData.abi, mobilityContractData.bytecode, userBlockchainAddress, userBlockchainPassword, deployedErcEuroToken._address)
-    console.log(deployedMobilityContract)
+    await unlockBlockchainAccount(userBlockchainAddress, userBlockchainPassword)
+
+    deployedMobilityContract = await initializeContract(mobilityContractData.abi, mobilityContractData.bytecode, userBlockchainAddress, userBlockchainPassword)
     console.log("Mobility contract address", deployedMobilityContract._address)
     userBlockchainAddress = await initializeBlockchainAccount(userBlockchainPassword)
     serviceBlockchainAddress = await initializeBlockchainAccount(serviceBlockchainPassword)
@@ -33,15 +35,9 @@ const inializeWeb3 = async () => {
     }
 }
 
-const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword, constructorParam) => {
+const initializeContract = async (abi, bytecode, ownerAddress, ownerPassword) => {
     const contractInterface = new web3.eth.Contract(abi)
-    let deployTransaction
-    console.log(constructorParam)
-    if(constructorParam){
-        deployTransaction = contractInterface.deploy({data: bytecode, arguments: [constructorParam]})
-    } else {
-        deployTransaction = contractInterface.deploy({data: bytecode, arguments: []})
-    }
+    const deployTransaction = contractInterface.deploy({data: bytecode, arguments: []})
     const estimatedGas = await deployTransaction.estimateGas()
     console.log("Estimated gas", estimatedGas)
     return deployTransaction.send({gas: estimatedGas, from: ownerAddress})
@@ -67,9 +63,14 @@ const getMobilityContract = () => {
     return deployedMobilityContract
 }
 
+const getEuroTokenContract = () => {
+    return deployedErcEuroToken
+}
+
 module.exports = {
     initializeSmartContract,
     getMobilityContract,
+    getEuroTokenContract,
     getAccount,
     unlockBlockchainAccount
 }

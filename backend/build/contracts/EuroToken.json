@@ -316,7 +316,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 33,
-        "sourceUnit": 1096,
+        "sourceUnit": 1086,
         "src": "26:35:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -330,10 +330,10 @@
               "id": 3,
               "name": "StandardToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1095,
+              "referencedDeclaration": 1085,
               "src": "332:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_StandardToken_$1095",
+                "typeIdentifier": "t_contract$_StandardToken_$1085",
                 "typeString": "contract StandardToken"
               }
             },
@@ -343,10 +343,10 @@
           }
         ],
         "contractDependencies": [
-          774,
-          817,
-          849,
-          1095
+          764,
+          807,
+          839,
+          1085
         ],
         "contractKind": "contract",
         "documentation": "@title EuroToken\n@dev Very simple ERC20 Token representing Euro, where all tokens are pre-assigned to the creator.\nNote they can later distribute these tokens as they wish using `transfer` and other\n`StandardToken` functions.",
@@ -354,10 +354,10 @@
         "id": 32,
         "linearizedBaseContracts": [
           32,
-          1095,
-          774,
-          817,
-          849
+          1085,
+          764,
+          807,
+          839
         ],
         "name": "EuroToken",
         "nodeType": "ContractDefinition",
@@ -554,7 +554,7 @@
                       "name": "totalSupply_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 693,
+                      "referencedDeclaration": 683,
                       "src": "623:12:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -602,7 +602,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 691,
+                        "referencedDeclaration": 681,
                         "src": "662:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -618,7 +618,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1208,
+                          "referencedDeclaration": 1198,
                           "src": "671:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -738,7 +738,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 33,
-        "sourceUnit": 1096,
+        "sourceUnit": 1086,
         "src": "26:35:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -752,10 +752,10 @@
               "id": 3,
               "name": "StandardToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1095,
+              "referencedDeclaration": 1085,
               "src": "332:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_StandardToken_$1095",
+                "typeIdentifier": "t_contract$_StandardToken_$1085",
                 "typeString": "contract StandardToken"
               }
             },
@@ -765,10 +765,10 @@
           }
         ],
         "contractDependencies": [
-          774,
-          817,
-          849,
-          1095
+          764,
+          807,
+          839,
+          1085
         ],
         "contractKind": "contract",
         "documentation": "@title EuroToken\n@dev Very simple ERC20 Token representing Euro, where all tokens are pre-assigned to the creator.\nNote they can later distribute these tokens as they wish using `transfer` and other\n`StandardToken` functions.",
@@ -776,10 +776,10 @@
         "id": 32,
         "linearizedBaseContracts": [
           32,
-          1095,
-          774,
-          817,
-          849
+          1085,
+          764,
+          807,
+          839
         ],
         "name": "EuroToken",
         "nodeType": "ContractDefinition",
@@ -976,7 +976,7 @@
                       "name": "totalSupply_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 693,
+                      "referencedDeclaration": 683,
                       "src": "623:12:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1024,7 +1024,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 691,
+                        "referencedDeclaration": 681,
                         "src": "662:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -1040,7 +1040,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1208,
+                          "referencedDeclaration": 1198,
                           "src": "671:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1139,5 +1139,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-07-22T09:41:04.375Z"
+  "updatedAt": "2018-07-22T10:04:35.120Z"
 }
