@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: new AlertDialog(
               title: new Text("Offer"),
               content: new Text(
-                  "You finished your journey"),
+                  "You finished your journey. You payed ${params['totalPrice']} and travelled ${params['distanceTravelled']}km"),
           ));
     }
 
@@ -139,7 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
         } else if (decoded['type'] == 'started') {
           showStartDialog({"offerId": decoded['offerId']});
         } else if (decoded['type'] == 'finished') {
-          showFinishDialog({"offerId": decoded['offerId']});
+          showFinishDialog({"offerId": decoded['offerId'], "totalPrice": decoded['totalPrice'],
+            "distanceTravelled": decoded['distanceTravelled']});
         }
       }
     });
