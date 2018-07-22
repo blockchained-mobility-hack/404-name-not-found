@@ -133,7 +133,7 @@ Future<List<Result>> getResults(
     distanceSoFar: start.distance + flight.distance,
     distance: airport2.distance,
     title: 'Carsharing from the airport ' + airport2.name,
-    price: 0.36 * airport2.distance,
+    price: 0.36 * airport2.distance + 12 ,//12€ airport fees
     type: TravelType.carsharing,
   );
 
