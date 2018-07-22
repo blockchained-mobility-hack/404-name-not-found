@@ -75,37 +75,44 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     getAccessTokenAmadeus();
-
-    var channel = IOWebSocketChannel.connect("ws://localhost:8080");
-
-    channel.stream.listen((message) {
-      print(message);
-    });
   }
-
 
   @override
   Widget build(BuildContext context) {
-    showAcceptDialog() {
-      showDialog(context: context, child:
-        new AlertDialog(
-          title: new Text("Offer"),
-          content: new Text("You will be billed by 22€ for taking the car"),
-          actions: <Widget>[
-                    new FlatButton(
-                      child: new Text('Accept'),
-                      onPressed: () {
-                      },
-                    ),
-                    new FlatButton(
-                      child: new Text('Decline'),
-                      onPressed: () {
-                      },
-                    )
-                  ]
-        )
-      );
+    showAcceptDialog(params) {
+      showDialog(
+          context: context,
+          child: new AlertDialog(
+              title: new Text("Offer"),
+              content: new Text(
+                  "You will be billed by ${params['pricePerKm']} €/km for taking the car"),
+              actions: <Widget>[
+                new FlatButton(
+                  child: new Text('Accept'),
+                  onPressed: () {
+                    acceptOffer(params['offerId']);
+                  },
+                ),
+                new FlatButton(
+                  child: new Text('Decline'),
+                  onPressed: () {
+                    declineOffer(params['offerId']);
+                  },
+                )
+              ]));
     }
+
+    var channel = IOWebSocketChannel.connect("ws://172.27.65.253:8000");
+
+    channel.stream.listen((message) {
+      // offerId, provider, pricePerKm, validUntil, hasv
+      print(message);
+      if (message != null) {
+        var decoded = json.decode(message);
+        print(decoded);
+        showAcceptDialog({"pricePerKm": decoded['pricePerKm'], "offerId": decoded['offerId'] });
+      }
+    });
 
     List<Step> my_steps = [
       new Step(
@@ -124,20 +131,16 @@ class _MyHomePageState extends State<MyHomePage> {
           title: new Text("Step 3"),
           content: Column(children: [
             new Padding(
-              padding: new EdgeInsets.all(8.0),
-              child: Row(
-                children: [ 
+                padding: new EdgeInsets.all(8.0),
+                child: Row(children: [
                   Icon(Icons.directions_car),
                   new Text("Route has been calculated.\n Please go to the car"),
                   FlatButton(
-                    onPressed: () {
-                      showAcceptDialog();
-                    },
-                    child: new Text("show")
-                  )
-                ]
-              )
-            ),
+                      onPressed: () {
+                        showAcceptDialog(1);
+                      },
+                      child: new Text("show"))
+                ])),
             new Image.asset('images/map.png'),
           ]),
           isActive: true),

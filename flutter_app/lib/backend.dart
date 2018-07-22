@@ -3,9 +3,8 @@ part of "main.dart";
 Future<http.Response> callBackend(path, params) async {
   Uri apiUrl = new Uri(
       scheme: 'http',
-      host: '127.0.0.1',
-      path: "api/mobility-platform/" + path,
-      queryParameters: params);
+      host: '172.27.64.179',
+      path: "api/mobility-platform/" + path);
 
   print(apiUrl);
 
@@ -19,12 +18,6 @@ acceptOffer(offerId) async {
 }
 
 declineOffer(offerId) async {
-  var resp =
-      await callBackend('mobile/decline-proposed-offer', {offerId: offerId});
-  return json.decode(resp.body);
-}
-
-startUsage(offerId) async {
   var resp =
       await callBackend('mobile/decline-proposed-offer', {offerId: offerId});
   return json.decode(resp.body);
