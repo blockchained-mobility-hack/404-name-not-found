@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk-animation": "^1.6.0",
-    "commander": "^2.16.0"
+    "chalk-animation": "^1.6.0"
   }
 }
