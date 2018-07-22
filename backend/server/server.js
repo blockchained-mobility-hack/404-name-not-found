@@ -327,7 +327,7 @@ app.post('/api/mobility-platform/service-provider/finish-service-usage', jsonPar
                 offerId: serviceUsageEndedEvent.returnValues.offerId,
                 serviceUsageEndTime: serviceUsageEndedEvent.returnValues.serviceUsageEndTime,
                 distanceTravelled: serviceUsageEndedEvent.returnValues.distanceTravelled,
-                totalPrice: serviceUsageEndedEvent.returnValues.totalPrice,
+                totalPrice: paymentEvent.returnValues.totalPrice,
                 hashv: serviceUsageEndedEvent.returnValues.hashV
 
             }
