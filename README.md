@@ -17,6 +17,9 @@
 ## Concept diagram
 ![Concept Diagram](docs/MobiPayDiagram.png)
 
+## App stages with screenshots
+[App stages](AppSteps.md)
+
 ## Architecture
 ![Architecture](docs/Architecture.png)
 
