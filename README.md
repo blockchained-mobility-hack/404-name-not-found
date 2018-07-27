@@ -18,7 +18,17 @@
 ![Concept Diagram](docs/MobiPayDiagram.png)
 
 ## App stages with screenshots
-## [App stages](AppSteps.md)
+
+### [Stage1](AppStage1.md)
+
+### [Stage2](AppStage1.md)
+
+### [Stage3](AppStage1.md)
+
+### [Stage4](AppStage1.md)
+
+
+
 
 ## Architecture
 ![Architecture](docs/Architecture.png)
