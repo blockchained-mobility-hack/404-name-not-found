@@ -1,8 +1,17 @@
-# flutter_app
+## Running the app
 
-A new Flutter project.
+- install android studio
 
-## Getting Started
+- install android virtual device (android studio -> mvd)
 
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+- ask creators for credentials and put them in file `secrets.dart` in app/lib or create googlePlacesApi token + amadeus api tokens
+
+- change websockets/server ip to point to your server ip
+
+- run the virtual device
+
+- run the app with big, green play button
+
+
+
+
