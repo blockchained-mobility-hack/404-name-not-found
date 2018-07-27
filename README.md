@@ -16,3 +16,6 @@
 
 ## Concept diagram
 ![Concept Diagram](docs/MobiPayDiagram.png)
+
+## Architecture
+![Architecture](docs/Architecture.png)
