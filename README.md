@@ -19,13 +19,13 @@
 
 ## App stages with screenshots
 
-### [Stage1](AppStage1.md)
+### [Stage1](docs/AppStage1.md)
 
-### [Stage2](AppStage2.md)
+### [Stage2](docs/AppStage2.md)
 
-### [Stage3](AppStage3.md)
+### [Stage3](docs/AppStage3.md)
 
-### [Stage4](AppStage4.md)
+### [Stage4](docs/AppStage4.md)
 
 
 
