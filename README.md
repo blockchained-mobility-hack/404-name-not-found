@@ -4,7 +4,7 @@
 
 |Key|Value|
 |-|-|
-|Team name|MobiPay - Pay as you go|
+|Team name|404-name-not-found|
 |Team lead | [Rafal Hofman](https://github.com/RafalBDS)|
 |Team members| [Rafal Hofman](https://github.com/RafalBDS), Dariusz Kowalczyk, [Gabriel Zink](https://github.com/gzink), [Jakob Niggel](https://github.com/Jnig), [Martin Berger](https://github.com/drmartinberger)|
 |Platform | Ethereum |
